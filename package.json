@@ -1,12 +1,34 @@
 {
-  "name": "newebpay-mpg-sdk",
+  "name": "@waynehavbitx/newebpay-mpg-sdk",
   "version": "1.0.0",
   "description": "藍新金流 幕前支付(MPG) SDK",
-  "main": "index.js",
-  "author": "Wen-Hong Huang<waynehonghuang@gmail.com>",
+  "main": "./build/index.js",
+  "author": "Wen-Hong Huang <waynehonghuang@gmail.com>",
+  "repository": {
+    "url": "git+https://github.com/depresto/newebpay-mpg-sdk.git"
+  },
   "license": "MIT",
+  "files": [
+    "build",
+    "./index.d.ts"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "deploy": "yarn build && npm publish"
+  },
   "devDependencies": {
     "@types/node": "^18.6.2",
     "typescript": "^4.7.4"
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/depresto/newebpay-mpg-sdk/issues"
+  },
+  "homepage": "https://github.com/depresto/newebpay-mpg-sdk#readme",
+  "keywords": [
+    "Newebpay",
+    "Payment",
+    "SDK",
+    "ezPay",
+    "SPGateway"
+  ]
 }
