@@ -90,6 +90,9 @@ export type TradeInfoResult = {
   ChannelNo?: string;
   PayAmt?: number;
   RedDisAmt?: number;
+
+  ExpireDate?: string
+  BankCode?: string
 };
 
 class NewebpayClient {
