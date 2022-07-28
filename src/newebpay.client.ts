@@ -133,7 +133,7 @@ class NewebpayClient {
     return encrypted;
   }
 
-  public decryptTradeInfo(tradeInfo: string) {
+  public parseTradeInfo(tradeInfo: string) {
     const decipher = crypto.createDecipheriv(
       "aes256",
       this.hashKey,

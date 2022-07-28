@@ -100,6 +100,6 @@ export class NewebpayClient {
     version?: string;
   });
 
-  public decryptTradeInfo(tradeInfo: string): TradeInfo
+  public parseTradeInfo(tradeInfo: string): TradeInfo
   public getPaymentFormHTML(params: RequestData): string
 }
