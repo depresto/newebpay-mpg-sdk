@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "lib": ["ES2020"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "useUnknownInCatchVariables": false,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "module": "commonjs" /* Specify what module code is generated. */,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "sourceMap": false,
+    "outDir": "./build",
+    "incremental": true
+  },
+  "include": ["./src/**/*"],
+  "exclude": ["node_modules", "**/*.spec.ts"]
+}
