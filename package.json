@@ -14,7 +14,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "deploy": "yarn build && npm publish"
+    "deploy": "yarn build && npm publish --access public"
   },
   "devDependencies": {
     "@types/node": "^18.6.2",
