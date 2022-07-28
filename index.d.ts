@@ -91,7 +91,7 @@ export type TradeInfoResult = {
 };
 
 
-export class NewebpayClient {
+export default class NewebpayClient {
   constructor(params: {
     merchantId: string;
     hashKey: string;
