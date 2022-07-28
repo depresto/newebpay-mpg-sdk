@@ -1,6 +1,6 @@
 import crypto from "crypto";
 
-type RequestData = {
+export type RequestData = {
   RespondType?: "JSON" | "String";
   LangType?: "zh-tw" | "en" | "jp";
   MerchantOrderNo: string;
@@ -38,12 +38,12 @@ type RequestData = {
   LgsType?: "B2C" | "C2C";
 };
 
-type TradeInfo = {
+export type TradeInfo = {
   Status: "SUCCESS" | string;
   Message: string;
   Result: TradeInfoResult | string;
 };
-type TradeInfoResult = {
+export type TradeInfoResult = {
   MerchantID: string;
   Amt: number;
   TradeNo: string;
