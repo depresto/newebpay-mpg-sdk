@@ -1,3 +1,8 @@
-import NewebpayClient from "./newebpay.client";
+import NewebpayClient, {
+  RequestData,
+  TradeInfo,
+  TradeInfoResult,
+} from "./newebpay.client";
 
-export default NewebpayClient
+export { RequestData, TradeInfo, TradeInfoResult };
+export default NewebpayClient;
