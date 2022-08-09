@@ -91,8 +91,8 @@ export type TradeInfoResult = {
   PayAmt?: number;
   RedDisAmt?: number;
 
-  ExpireDate?: string
-  BankCode?: string
+  ExpireDate?: string;
+  BankCode?: string;
 };
 
 class NewebpayClient {
@@ -147,6 +147,24 @@ class NewebpayClient {
     decrypted += decipher.final("utf8");
 
     return JSON.parse(decrypted.replace(/[\x00-\x20]+/g, "")) as TradeInfo;
+  }
+
+  public buildCheckCode(params: { [key: string]: any }) {
+    const data = Object.keys(params)
+      .sort()
+      .reduce((obj, key) => {
+        obj[key] = params[key];
+        return obj;
+      }, {} as { [key: string]: any });
+
+    const paramsStr = new URLSearchParams(data).toString();
+    const checkStr = `HashIV=${this.hashIV}&${paramsStr}&HashKey=${this.hashKey}`;
+
+    return crypto
+      .createHash("sha256")
+      .update(checkStr)
+      .digest("hex")
+      .toUpperCase();
   }
 
   public getPaymentFormHTML(params: RequestData): string {

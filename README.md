@@ -88,3 +88,12 @@ client.getPaymentFormHTML({
 const rawTradeInfo = '' // TradeInfo data from api
 const tradeInfo = client.parseTradeInfo(rawTradeInfo)
 ```
+
+## Generate Check Code for Verify Message
+
+```javascript
+const params = {
+  // Some data from API
+}
+const checkCode = client.buildCheckCode(params)
+```
