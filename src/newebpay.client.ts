@@ -147,7 +147,7 @@ class NewebpayClient {
     });
     const status = data.status as string;
     const message = data.message as string;
-    const result = data.result as { [key: string]: any };
+    const result = JSON.parse(data.result || "{}") as { [key: string]: any };
 
     return {
       status,
