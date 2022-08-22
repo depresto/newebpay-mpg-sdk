@@ -17,6 +17,7 @@ class NewebpayClient {
     hashKey: string;
     hashIV: string;
     env: "sandbox" | "production";
+    proxyEndpoint?: string;
   }) {
     this.partnerId = params.partnerId ?? null;
     this.merchantId = params.merchantId;
@@ -24,10 +25,11 @@ class NewebpayClient {
     this.hashIV = params.hashIV;
     this.dryRun = params.env === "sandbox";
 
-    this.apiEndpoint =
-      this.dryRun === true
-        ? "https://ccore.newebpay.com"
-        : "https://core.newebpay.com";
+    this.apiEndpoint = params.proxyEndpoint
+      ? params.proxyEndpoint
+      : this.dryRun === true
+      ? "https://ccore.newebpay.com"
+      : "https://core.newebpay.com";
   }
 
   private buildTradeInfo(params: { [key: string]: any }) {
