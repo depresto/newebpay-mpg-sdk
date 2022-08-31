@@ -126,7 +126,7 @@ class NewebpayClient {
     return html.join("\n");
   }
 
-  public async refundCreditCardHTML(params: RefundCreditCardParams) {
+  public async refundCreditCard(params: RefundCreditCardParams) {
     const PostData_ = this.buildTradeInfo({
       RespondType: "JSON",
       TimeStamp: Math.floor(new Date().getTime() / 1000),
