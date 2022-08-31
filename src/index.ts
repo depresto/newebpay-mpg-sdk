@@ -59,7 +59,6 @@ export type TradeInfoResult = {
 };
 
 export type PaymentParams = {
-  RespondType?: "JSON" | "String";
   Version?: string;
   LangType?: "zh-tw" | "en" | "jp";
   MerchantOrderNo: string;
@@ -97,6 +96,27 @@ export type PaymentParams = {
   LgsType?: "B2C" | "C2C";
 };
 
+export type RefundCreditCardParams = {
+  Amt: number;
+  MerchantOrderNo: string;
+  IndexType: 1 | 2;
+  TradeNo: string;
+  CloseType: 1 | 2;
+  Cancel?: 1;
+};
+
+export type RefundEWalletParams = {
+  MerchantOrderNo: string;
+  Amount: number;
+  PaymentType:
+    | "ESUNWALLET"
+    | "LINEPAY"
+    | "TAIWANPAY"
+    | "EZPAY"
+    | "EZPALIPAY"
+    | "EZPWECHAT";
+};
+
 export type AddMerchantParams = {
   Version?: string;
   MemberUnified: string;
@@ -106,53 +126,53 @@ export type AddMerchantParams = {
   IDCardPlace?: string;
   IDPic?: 0 | 1;
   IDFrom?: 1 | 2 | 3;
-  Date?: string
-  CapitalAmount?: string
-  IncorporationDate?:string
-  CompanyAddress?: string
-  MemberName: string
-  MemberPhone:string
-  MemberAddress:string
-  ManagerName:string
-  ManagerNameE:string
-  LoginAccount:string
-  ManagerMobile:string
-  ManagerEmail:string
-  DisputeMail:string
-  MerchantEmail:string
-  MerchantID:string
-  MCType:string
-  MerchantName:string
-  MerchantNameE?:string
-  MerchantWebURL:string
-  MerchantAddrCity:string
-  MerchantAddrArea:string
-  MerchantAddrCode:string
-  MerchantAddr:string
-  MerchantEnAddr:string
-  NationalE?:string
-  CityE?:string
-  MerchantType: 1 | 2 | 3 | 4
-  BusinessType: string
-  MerchantDesc: string
-  BankCode:string
-  SubBankCode:string
-  BankAccount:string
-  AccountName?:string
-  CreditAutoType?: 0 | 1
-  CreditLimit?: number
-  PaymentType?: string
-  AgreedFee?: string
-  AgreedDay?: string
-  Withdraw?: '1' | '2' | '3' | '4' | '9'
-  WithdrawMer?: '1' | '2' | '3' | '4'
-  WithdrawSetting?: string
-  Shipping?: '1' | '2' | '3'
-  ShippingName?: string
-  ShippingTel?: string
-  ShippingEmail?: string
-  ReturnURL?: string
-  NotifyURL?: string
+  Date?: string;
+  CapitalAmount?: string;
+  IncorporationDate?: string;
+  CompanyAddress?: string;
+  MemberName: string;
+  MemberPhone: string;
+  MemberAddress: string;
+  ManagerName: string;
+  ManagerNameE: string;
+  LoginAccount: string;
+  ManagerMobile: string;
+  ManagerEmail: string;
+  DisputeMail: string;
+  MerchantEmail: string;
+  MerchantID: string;
+  MCType: string;
+  MerchantName: string;
+  MerchantNameE?: string;
+  MerchantWebURL: string;
+  MerchantAddrCity: string;
+  MerchantAddrArea: string;
+  MerchantAddrCode: string;
+  MerchantAddr: string;
+  MerchantEnAddr: string;
+  NationalE?: string;
+  CityE?: string;
+  MerchantType: 1 | 2 | 3 | 4;
+  BusinessType: string;
+  MerchantDesc: string;
+  BankCode: string;
+  SubBankCode: string;
+  BankAccount: string;
+  AccountName?: string;
+  CreditAutoType?: 0 | 1;
+  CreditLimit?: number;
+  PaymentType?: string;
+  AgreedFee?: string;
+  AgreedDay?: string;
+  Withdraw?: "1" | "2" | "3" | "4" | "9";
+  WithdrawMer?: "1" | "2" | "3" | "4";
+  WithdrawSetting?: string;
+  Shipping?: "1" | "2" | "3";
+  ShippingName?: string;
+  ShippingTel?: string;
+  ShippingEmail?: string;
+  ReturnURL?: string;
+  NotifyURL?: string;
 };
 
 export default NewebpayClient;

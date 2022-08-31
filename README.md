@@ -81,7 +81,7 @@ client.getPaymentFormHTML({
 });
 ```
 
-## Parse returning TradeInfo data
+### Parse returning TradeInfo data
 
 詳情請見官方文件：[文件網址](https://www.newebpay.com/website/Page/download_file?name=NewebPay_Online%20Payment-Foreground%20Scenario%20API%20Specification_NDNF-1.0.1.pdf)
 
@@ -90,7 +90,7 @@ const rawTradeInfo = ""; // TradeInfo data from api
 const tradeInfo = client.parseTradeInfo(rawTradeInfo);
 ```
 
-## Generate Check Code for Verify Message
+### Generate Check Code for Verify Message
 
 ```javascript
 const params = {
@@ -99,12 +99,63 @@ const params = {
 const checkCode = client.buildCheckCode(params);
 ```
 
-## Create a new merchant (Partner API)
+### Refund an Credit Card Order
+
+詳情請見官方文件：[文件網址](https://www.newebpay.com/website/Page/download_file?name=NewebPay_Online%20Payment-Foreground%20Scenario%20API%20Specification_NDNF-1.0.1.pdf)
+
+```javascript
+const { 
+  Status, // 回傳狀態 若請退款成功則回傳 SUCCESS
+  Message, 
+  Result: { MerchantID, Amt, TradeNo, MerchantOrderNo }
+} = await client.refundCreditCardHTML({
+  MerchantOrderNo: "2020072812000000", // 訂單編號 必填
+  Amt: 1000, // 訂單金額 必填
+  IndexType: 1, // 選用單號類別 必填 1 代表選用商店訂單編號 / 2 代表選用藍新金流交易序號
+  TradeNo: "2020072812000000", // 藍新金流交易序號 必填
+  CloseType: 1, // 請款或退款 必填 請款/取消請款時請填 1 / 退款/取消退款時請填 2
+  Cancel: 1, // 取消請款或退款 非必填 配合 CloseType 欄位，欲發動取消請款或取消退款時此欄請填 1
+});
+```
+
+### Refund an EWallet Order
+
+詳情請見官方文件：[文件網址](https://www.newebpay.com/website/Page/download_file?name=NewebPay_Online%20Payment-Foreground%20Scenario%20API%20Specification_NDNF-1.0.1.pdf)
+
+```javascript
+const { 
+  UID, // 商店代號
+  Status, // 回傳狀態 若退款成功則回傳 1000
+  Message, 
+  Result: { // Parsed EncryptData_
+    TradeNo, 
+    BankMessage, 
+    BankCode, 
+    MerchantOrderNo, 
+    RefundAmount, 
+    RefundDate
+  }
+} = await client.refundCreditCardHTML({
+  MerchantOrderNo: "2020072812000000", // 訂單編號 必填
+  Amount: 1000, // 訂單金額 必填
+  PaymentType: "LINEPAY" // 付款方式 必填 
+});
+
+// 付款方式列表
+// 玉山 Wallet = ESUNWALLET
+// Line Pay = LINEPAY
+// 台灣 Pay = TAIWANPAY
+// ezPay waller = EZPAY
+// Alipay = EZPALIPAY
+// WeChat = EZPWECHAT
+```
+
+### Create a new merchant (Partner API)
 
 詳情請見官方文件：(金流合作推廣商 商店建立技術串接手冊)
 
 ```javascript
-client.addMerchant({
+const { status, message, result } = await client.addMerchant({
   // See Partner API (商店建立參數說明)
 })
 ```

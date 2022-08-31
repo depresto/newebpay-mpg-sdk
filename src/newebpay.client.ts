@@ -1,7 +1,13 @@
 import crypto from "crypto";
 import axios from "axios";
 import FormData from "form-data";
-import { AddMerchantParams, PaymentParams, TradeInfo } from ".";
+import {
+  AddMerchantParams,
+  PaymentParams,
+  RefundCreditCardParams,
+  RefundEWalletParams,
+  TradeInfo,
+} from ".";
 
 class NewebpayClient {
   partnerId: string | null;
@@ -102,7 +108,7 @@ class NewebpayClient {
     const tradeSha = this.buildTradeSha(tradeInfo);
 
     const html: string[] = [];
-    const paymentUrl = `${this.apiEndpoint}//MPG/mpg_gateway`;
+    const paymentUrl = `${this.apiEndpoint}/MPG/mpg_gateway`;
     const formId = `_auto_pay_Form_${new Date().getTime()}`;
 
     html.push(`<form id="${formId}" method="post" action="${paymentUrl}">`);
@@ -118,6 +124,71 @@ class NewebpayClient {
     html.push(`document.getElementById("${formId}").submit();`);
     html.push("</script>");
     return html.join("\n");
+  }
+
+  public async refundCreditCardHTML(params: RefundCreditCardParams) {
+    const PostData_ = this.buildTradeInfo({
+      RespondType: "JSON",
+      TimeStamp: Math.floor(new Date().getTime() / 1000),
+      Version: "1.1",
+      ...params,
+    });
+
+    const formData = new FormData();
+    formData.append("MerchantID_", this.merchantId);
+    formData.append("PostData_", PostData_);
+
+    const { data } = await axios({
+      method: "post",
+      url: `${this.apiEndpoint}/API/CreditCard/Close`,
+      data: formData,
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    const Status = data.Status as string;
+    const Message = data.Message as string;
+    const Result = data.Result as { [key: string]: any };
+
+    return {
+      Status,
+      Message,
+      Result,
+    };
+  }
+
+  public async refundEWallet(params: RefundEWalletParams) {
+    const EncryptData_ = this.buildTradeInfo({
+      TimeStamp: Math.floor(new Date().getTime() / 1000),
+      ...params,
+    });
+    const HashData_ = this.buildTradeSha(EncryptData_);
+
+    const formData = new FormData();
+    formData.append("UID_", this.merchantId);
+    formData.append("Version_", "1.0");
+    formData.append("EncryptData_", EncryptData_);
+    formData.append("RespondType_", "JSON");
+    formData.append("HashData_", HashData_);
+
+    const { data } = await axios({
+      method: "post",
+      url: `${this.apiEndpoint}/API/EWallet/refund`,
+      data: formData,
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    const Status = data.Status as string;
+    const Message = data.Message as string;
+    const UID = data.UID as string;
+    const Version = data.Version as string;
+    const EncryptData = data.EncryptData as string;
+    const Result = this.parseTradeInfo(EncryptData) as { [key: string]: any };
+
+    return {
+      UID,
+      Version,
+      Status,
+      Message,
+      Result,
+    };
   }
 
   /**
@@ -147,7 +218,7 @@ class NewebpayClient {
     });
     const status = data.status as string;
     const message = data.message as string;
-    const result = JSON.parse(data.result || "{}") as { [key: string]: any };
+    const result = data.result as { [key: string]: any };
 
     return {
       status,
