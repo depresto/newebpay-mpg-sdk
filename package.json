@@ -1,6 +1,6 @@
 {
   "name": "newebpay-mpg-sdk",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "藍新金流 幕前支付(MPG) SDK",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
