@@ -36,13 +36,12 @@ const client = new NewebpayClient({
 });
 ```
 
-### Get Payment Form
+### Get Payment Form (MPG 交易 [NPA-01])
 
 詳情請見官方文件：[文件網址](https://www.newebpay.com/website/Page/download_file?name=NewebPay_Online%20Payment-Foreground%20Scenario%20API%20Specification_NDNF-1.0.1.pdf)
 
 ```javascript
 client.getPaymentFormHTML({
-  Version: "2.0", // API 版本 非必填 預設 2.0
   MerchantOrderNo: "2020072812000000", // 訂單編號 必填
   Amt: 1000, // 訂單金額 必填
   ItemDesc: "商品1,商品2", // 商品資訊 必填 以逗號 (,) 分格, 最多 50 字元
@@ -81,7 +80,7 @@ client.getPaymentFormHTML({
 });
 ```
 
-### Parse returning TradeInfo data
+### Parse returning TradeInfo data (解密 TradeInfo/AES256)
 
 詳情請見官方文件：[文件網址](https://www.newebpay.com/website/Page/download_file?name=NewebPay_Online%20Payment-Foreground%20Scenario%20API%20Specification_NDNF-1.0.1.pdf)
 
@@ -90,7 +89,7 @@ const rawTradeInfo = ""; // TradeInfo data from api
 const tradeInfo = client.parseTradeInfo(rawTradeInfo);
 ```
 
-### Generate Check Code for Verify Message
+### Generate Check Code for Verify Message (加密 CheckCode)
 
 ```javascript
 const params = {
@@ -99,7 +98,7 @@ const params = {
 const checkCode = client.buildCheckCode(params);
 ```
 
-### Refund an Credit Card Order
+### Refund an Credit Card Order (請退款/取消請退款 [NPA-B031~34])
 
 詳情請見官方文件：[文件網址](https://www.newebpay.com/website/Page/download_file?name=NewebPay_Online%20Payment-Foreground%20Scenario%20API%20Specification_NDNF-1.0.1.pdf)
 
@@ -118,7 +117,7 @@ const {
 });
 ```
 
-### Refund an EWallet Order
+### Refund an EWallet Order (電子錢包退款 [NPA-B06])
 
 詳情請見官方文件：[文件網址](https://www.newebpay.com/website/Page/download_file?name=NewebPay_Online%20Payment-Foreground%20Scenario%20API%20Specification_NDNF-1.0.1.pdf)
 

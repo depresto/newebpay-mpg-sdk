@@ -4,6 +4,7 @@ import FormData from "form-data";
 import {
   AddMerchantParams,
   PaymentParams,
+  QueryTradeInfoParams,
   RefundCreditCardParams,
   RefundEWalletParams,
   TradeInfo,
@@ -124,6 +125,39 @@ class NewebpayClient {
     html.push(`document.getElementById("${formId}").submit();`);
     html.push("</script>");
     return html.join("\n");
+  }
+
+  public async queryTradeInfo(params: QueryTradeInfoParams) {
+    const { Amt, MerchantOrderNo } = params;
+    const MerchantID = this.merchantId;
+    const Version = "1.3";
+    const TimeStamp = Math.floor(new Date().getTime() / 1000).toString();
+    const CheckCode = this.buildCheckCode({ Amt, MerchantID, MerchantOrderNo });
+
+    const formData = new FormData();
+    formData.append("MerchantID", MerchantID);
+    formData.append("Version", Version);
+    formData.append("RespondType", "JSON");
+    formData.append("CheckValue", CheckCode);
+    formData.append("TimeStamp", TimeStamp);
+    formData.append("MerchantOrderNo", MerchantOrderNo);
+    formData.append("Amt", Amt);
+
+    const { data } = await axios({
+      method: "post",
+      url: `${this.apiEndpoint}/API/QueryTradeInfo`,
+      data: formData,
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    const Status = data.Status as string;
+    const Message = data.Message as string;
+    const Result = data.Result as { [key: string]: any };
+
+    return {
+      Status,
+      Message,
+      Result,
+    };
   }
 
   public async refundCreditCard(params: RefundCreditCardParams) {

@@ -96,6 +96,12 @@ export type PaymentParams = {
   LgsType?: "B2C" | "C2C";
 };
 
+export type QueryTradeInfoParams = {
+  MerchantOrderNo: string
+  Amt: number;
+  Gateway?: 'Composite'
+}
+
 export type RefundCreditCardParams = {
   Amt: number;
   MerchantOrderNo: string;
