@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import axios from "axios";
+import axios, { AxiosRequestHeaders } from "axios";
 import FormData from "form-data";
 import {
   AddMerchantParams,
@@ -17,6 +17,7 @@ class NewebpayClient {
   hashIV: string;
   dryRun: boolean;
   apiEndpoint: string;
+  proxySecret?: string;
 
   constructor(params: {
     partnerId?: string;
@@ -25,6 +26,7 @@ class NewebpayClient {
     hashIV: string;
     env: "sandbox" | "production";
     proxyEndpoint?: string;
+    proxySecret?: string;
   }) {
     this.partnerId = params.partnerId ?? null;
     this.merchantId = params.merchantId;
@@ -244,11 +246,15 @@ class NewebpayClient {
       })
     );
 
+    const headers: AxiosRequestHeaders = {};
+    headers["Content-Type"] = "multipart/form-data";
+    if (this.proxySecret) headers["proxy-secret"] = this.proxySecret;
+
     const { data } = await axios({
       method: "post",
       url: `${this.apiEndpoint}/API/AddMerchant`,
       data: formData,
-      headers: { "Content-Type": "multipart/form-data" },
+      headers,
     });
     const status = data.status as string;
     const message = data.message as string;
