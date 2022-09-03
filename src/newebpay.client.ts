@@ -34,6 +34,7 @@ class NewebpayClient {
     this.hashIV = params.hashIV;
     this.dryRun = params.env === "sandbox";
 
+    this.proxySecret = params.proxySecret;
     this.apiEndpoint = params.proxyEndpoint
       ? params.proxyEndpoint
       : this.dryRun === true
