@@ -5,7 +5,6 @@ import {
   AddMerchantParams,
   CreditCardAgreementTokenParams,
   CreditCardPaymentParams,
-  CreditCardTokenPaymentParams,
   PaymentParams,
   QueryTradeInfoParams,
   RefundCreditCardParams,
@@ -244,10 +243,13 @@ class NewebpayClient {
     };
   }
 
-  public getCreditCardAgreementTokenFormHTML = (
+  public getCreditCardTokenAgreementFormHTML = (
     params: CreditCardAgreementTokenParams
   ) => {
-    return this.getFormHTML(params);
+    return this.getFormHTML({
+      ...params,
+      CREDITAGREEMENT: 1,
+    });
   };
 
   public requestCreditCardPayment = async (params: CreditCardPaymentParams) => {
@@ -258,39 +260,7 @@ class NewebpayClient {
       this.buildTradeInfo({
         MerchantID: this.merchantId,
         TimeStamp: Math.floor(new Date().getTime() / 1000),
-        Version: "1.1",
-        ...params,
-      })
-    );
-    formData.append("Pos_", "JSON");
-
-    const headers: AxiosRequestHeaders = {};
-    headers["Content-Type"] = "multipart/form-data";
-    if (this.proxySecret) headers["proxy-secret"] = this.proxySecret;
-
-    const response = await axios({
-      method: "post",
-      url: `${this.apiEndpoint}/API/CreditCard`,
-      data: formData,
-      headers,
-    });
-
-    const data = response.data as TradeInfo;
-    return data;
-  };
-
-  public requestCreditCardTokenPayment = async (
-    params: CreditCardTokenPaymentParams
-  ) => {
-    const formData = new FormData();
-    formData.append("MerchantID_", this.merchantId);
-    formData.append(
-      "PostData_",
-      this.buildTradeInfo({
-        MerchantID: this.merchantId,
-        TimeStamp: Math.floor(new Date().getTime() / 1000),
-        Version: "2.0",
-        P3D: 0,
+        Version: params.TokenSwitch ? "2.0" : "1.1",
         ...params,
       })
     );

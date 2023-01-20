@@ -191,7 +191,7 @@ export type CreditCardAgreementTokenParams = PaymentParams & {
 };
 
 export type CreditCardPaymentParams = {
-  Version?: "1.1";
+  Version?: "1.1" | '2.0';
   MerchantID?: string
   P3D?: 0 | 1;
   NotifyURL?: string;
@@ -214,13 +214,9 @@ export type CreditCardPaymentParams = {
   NTCBArea?: string;
   NTCBStart?: string;
   NTCBEnd?: string;
-};
-
-export type CreditCardTokenPaymentParams = CreditCardPaymentParams & {
-  Version?: "2.0";
-  TokenValue: string;
-  TokenTerm: string;
-  TokenSwitch: "on" | 'get';
+  TokenValue?: string;
+  TokenTerm?: string;
+  TokenSwitch?: "on" | 'get';
   TokenLife?: string;
 };
 

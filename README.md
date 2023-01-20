@@ -103,10 +103,10 @@ const checkCode = client.buildCheckCode(params);
 詳情請見官方文件：[文件網址](https://www.newebpay.com/website/Page/download_file?name=NewebPay_Online%20Payment-Foreground%20Scenario%20API%20Specification_NDNF-1.0.1.pdf)
 
 ```javascript
-const { 
+const {
   Status, // 回傳狀態 若請退款成功則回傳 SUCCESS
-  Message, 
-  Result: { MerchantID, Amt, TradeNo, MerchantOrderNo }
+  Message,
+  Result: { MerchantID, Amt, TradeNo, MerchantOrderNo },
 } = await client.refundCreditCardHTML({
   MerchantOrderNo: "2020072812000000", // 訂單編號 必填
   Amt: 1000, // 訂單金額 必填
@@ -122,22 +122,23 @@ const {
 詳情請見官方文件：[文件網址](https://www.newebpay.com/website/Page/download_file?name=NewebPay_Online%20Payment-Foreground%20Scenario%20API%20Specification_NDNF-1.0.1.pdf)
 
 ```javascript
-const { 
+const {
   UID, // 商店代號
   Status, // 回傳狀態 若退款成功則回傳 1000
-  Message, 
-  Result: { // Parsed EncryptData_
-    TradeNo, 
-    BankMessage, 
-    BankCode, 
-    MerchantOrderNo, 
-    RefundAmount, 
-    RefundDate
-  }
+  Message,
+  Result: {
+    // Parsed EncryptData_
+    TradeNo,
+    BankMessage,
+    BankCode,
+    MerchantOrderNo,
+    RefundAmount,
+    RefundDate,
+  },
 } = await client.refundCreditCardHTML({
   MerchantOrderNo: "2020072812000000", // 訂單編號 必填
   Amount: 1000, // 訂單金額 必填
-  PaymentType: "LINEPAY" // 付款方式 必填 
+  PaymentType: "LINEPAY", // 付款方式 必填
 });
 
 // 付款方式列表
@@ -156,5 +157,165 @@ const {
 ```javascript
 const { status, message, result } = await client.addMerchant({
   // See Partner API (商店建立參數說明)
-})
+});
+```
+
+### Request Credit Card Backstage Purchase
+
+信用卡幕後支付
+
+詳情請見官方文件：(信用卡幕後授權技術串接手冊 標準版)
+
+```javascript
+const {
+  Status,
+  Message,
+  Result: {
+    MerchantID, // 藍新金流商店代號
+    Amt, // 本次交易授權金額
+    TradeNo, // 由藍新金流平台產生的系統交易序號
+    MerchantOrderNo, // 商店自訂的訂單編號
+    RespondCode, // 金融機構回應碼
+    AuthBank, // 收單金融機構
+    CheckCode, // 檢核碼
+  },
+} = await client.requestCreditCardPayment({
+  P3D: 0, // 開啟3D交易 必填 1 | 0,
+  NotifyURL: "https://...", // 支付通知網址 非必填 3D交易為必填參數
+  ReturnURL: "https://...", // 支付完成返回商店網址 非必填 3D交易為必填參數
+  MerchantOrderNo: "1234", // 商店訂單編號 必填 限英、數字、”_ ”格式 / 長度限制為30字
+  Amt: 100, // 訂單金額 必填 純數字不含符號 / 新台幣
+  ProdDesc: "商品", // 商品描述 必填 長度限制50字
+  PayerEmail: "test@example.comm", // 付款人電子信箱 必填
+  Inst: 0, // 信用卡分期付款 非必填 0或無值時，即代表不開啟分期，分為3/6/12/18/24/30期
+  Red: 0, // 啟用紅利交易 非必填 1 | 0
+  CardAE: 0, // 啟用美國運通卡 非必填 1 | 0
+  CardNo: "4000221111111111", // 信用卡卡號 非必填 若非Google Pay或Apple Pay則為必填
+  Exp: "234", // 信用卡到期日 非必填 若非Google Pay或Apple Pay則為必填
+  CVC: "123", // 信用卡檢查碼 非必填 若非Google Pay或Apple Pay則為必填
+  APPLEPAY: "", // Apple Pay payment token 非必填
+  APPLEPAYTYPE: "", // Apple Pay 支付型態 非必填 01=In-app | 02=On-web
+  ANDROIDPAY: "", // Google Pay payment token 非必填
+  SAMSUNGPAY: "", // Samsung Pay payment token 非必填
+  NTCB: 0, // 啟用國民旅遊卡 非必填 1 | 0
+  NTCBArea: "", // 國民旅遊卡地區編號 非必填 詳見官方文件
+  NTCBStart: "", // 國民旅遊卡起始日期 非必填 YYYY-MM-DD
+  NTCBEnd: "", // 國民旅遊卡結束日期 非必填 YYYY-MM-DD
+});
+```
+
+驗證回傳 CheckCode
+
+```javascript
+const clientCheckCode = client.buildCheckCode({
+  Amt,
+  MerchantID,
+  MerchantOrderNo,
+  TradeNo,
+});
+if (clientCheckCode === CheckCode) {
+  console.log("CheckCode is valid");
+}
+```
+
+### Request Credit Card Agreement Token: Front Stage
+
+信用卡幕前首次約定付款
+
+詳情請見官方文件：(約定信用卡付款授權技術串接手冊)
+
+```javascript
+// 回傳付款跳轉 HTML 表單
+const tokenAgreementFormHTML = await client.getCreditCardTokenAgreementFormHTML({
+  NotifyURL: "https://...", // 支付通知網址 必填
+  ReturnURL: "https://...", // 支付完成返回商店網址 必填
+  MerchantOrderNo: "1234", // 商店訂單編號 必填 限英、數字、”_ ”格式 / 長度限制為30字
+  Amt: 100, // 訂單金額 必填 純數字不含符號 / 新台幣
+  ItemDesc: "約定信用卡", // 商品資訊 必填 以逗號 (,) 分格, 最多50字元
+  OrderComment: "約定信用卡", // 商店備註 非必填 最多300字元
+  Email: "test@example.comm", // 付款人電子信箱 必填
+  TokenTerm: "User ID", // Token名稱 必填 可對應付款人之資料，用於綁定付款人與信用卡卡號時使用，例:會員編號、Email
+  TokenLife: "2401", // Token有效日期 非必填 格式為YYMM，如2024/01為2401
+  ANDROIDPAYAGREEMENT: 1, // 約定Google Pay付款 非必填 0 | 1
+  SAMSUNGPAYAGREEMENT: 1, // 約定Samsung Pay付款 非必填 0 | 1
+});
+```
+
+### Request Credit Card Agreement Token: Backstage
+
+信用卡幕後首次約定付款
+
+詳情請見官方文件：(信用卡幕後授權技術串接手冊 標準版)
+
+```javascript
+const {
+  Status,
+  Message,
+  Result: {
+    MerchantID, // 藍新金流商店代號
+    Amt, // 本次交易授權金額
+    TradeNo, // 由藍新金流平台產生的系統交易序號
+    MerchantOrderNo, // 商店自訂的訂單編號
+    RespondCode, // 金融機構回應碼
+    AuthBank, // 收單金融機構
+    CheckCode, // 檢核碼
+    TokenValue, // 約定 Token
+    TokenLife, // Token 有效日期
+  },
+} = await client.requestCreditCardPayment({
+  P3D: 1, // 開啟3D交易 必填 1 | 0,
+  NotifyURL: "https://...", // 支付通知網址 非必填 3D交易為必填參數
+  ReturnURL: "https://...", // 支付完成返回商店網址 非必填 3D交易為必填參數
+  MerchantOrderNo: "1234", // 商店訂單編號 必填 限英、數字、”_ ”格式 / 長度限制為30字
+  Amt: 100, // 訂單金額 必填 純數字不含符號 / 新台幣
+  ProdDesc: "約定信用卡", // 商品描述 必填 長度限制50字
+  PayerEmail: "test@example.comm", // 付款人電子信箱 必填
+  Inst: 0, // 信用卡分期付款 非必填 0或無值時，即代表不開啟分期，分為3/6/12/18/24/30期
+  CardNo: "4000221111111111", // 信用卡卡號 必填
+  Exp: "234", // 信用卡到期日 必填
+  CVC: "123", // 信用卡檢查碼 必填
+  TokenSwitch: 'get', // Token類別 必填 固定為get
+  TokenTerm: "User ID", // Token名稱 必填 可對應付款人之資料，用於綁定付款人與信用卡卡號時使用，例:會員編號、Email
+  TokenLife: "2401", // Token有效日期 非必填 格式為YYMM，如2024/01為2401
+});
+```
+
+### Request Credit Card Payment by Token: Backstage
+
+信用卡幕後後續約定付款
+
+詳情請見官方文件：(信用卡幕後授權技術串接手冊 標準版)
+
+```javascript
+const {
+  Status,
+  Message,
+  Result: {
+    MerchantID, // 藍新金流商店代號
+    Amt, // 本次交易授權金額
+    TradeNo, // 由藍新金流平台產生的系統交易序號
+    MerchantOrderNo, // 商店自訂的訂單編號
+    RespondCode, // 金融機構回應碼
+    AuthBank, // 收單金融機構
+    CheckCode, // 檢核碼
+    TokenValue, // 約定 Token
+    TokenLife, // Token 有效日期
+  },
+} = await client.requestCreditCardPayment({
+  P3D: 0, // 開啟3D交易 必填 1 | 0,
+  NotifyURL: "https://...", // 支付通知網址 非必填 3D交易為必填參數
+  ReturnURL: "https://...", // 支付完成返回商店網址 非必填 3D交易為必填參數
+  MerchantOrderNo: "1234", // 商店訂單編號 必填 限英、數字、”_ ”格式 / 長度限制為30字
+  Amt: 100, // 訂單金額 必填 純數字不含符號 / 新台幣
+  ProdDesc: "約定信用卡", // 商品描述 必填 長度限制50字
+  PayerEmail: "test@example.comm", // 付款人電子信箱 必填
+  Inst: 0, // 信用卡分期付款 非必填 0或無值時，即代表不開啟分期，分為3/6/12/18/24/30期
+  CardNo: "4000221111111111", // 信用卡卡號 必填
+  Exp: "234", // 信用卡到期日 必填
+  CVC: "123", // 信用卡檢查碼 必填
+  TokenSwitch: 'on', // Token類別 必填 固定為on
+  TokenTerm: "User ID", // Token名稱 必填 可對應付款人之資料，用於綁定付款人與信用卡卡號時使用，例:會員編號、Email
+  TokenLife: "2401", // Token有效日期 非必填 格式為YYMM，如2024/01為2401
+  TokenValue: "", // 首次約定付款回傳之TokenValue 必填
+});
 ```
