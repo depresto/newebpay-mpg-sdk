@@ -97,10 +97,10 @@ export type PaymentParams = {
 };
 
 export type QueryTradeInfoParams = {
-  MerchantOrderNo: string
+  MerchantOrderNo: string;
   Amt: number;
-  Gateway?: 'Composite'
-}
+  Gateway?: "Composite";
+};
 
 export type RefundCreditCardParams = {
   Amt: number;
@@ -180,5 +180,21 @@ export type AddMerchantParams = {
   ReturnURL?: string;
   NotifyURL?: string;
 };
+
+export type CreditCardAgreementParams = PaymentParams & {
+  Version?: "2.0";
+  CREDITAGREEMENT: 1;
+  ANDROIDPAYAGREEMENT?: 1;
+  SAMSUNGPAYAGREEMENT?: 1;
+  TokenTerm: string;
+  TokenLife?: string;
+};
+
+export type CreditCardAgreementPaymentParams = {
+  Version?: "2.0";
+  TokenValue: string;
+  TokenTerm: string;
+  TokenSwitch: 'on';
+}
 
 export default NewebpayClient;

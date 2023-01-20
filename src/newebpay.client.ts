@@ -3,6 +3,7 @@ import axios, { AxiosRequestHeaders } from "axios";
 import FormData from "form-data";
 import {
   AddMerchantParams,
+  CreditCardAgreementParams,
   PaymentParams,
   QueryTradeInfoParams,
   RefundCreditCardParams,
@@ -100,34 +101,7 @@ class NewebpayClient {
    * Generate Newebpay payment HTML form
    */
   public getPaymentFormHTML(params: PaymentParams): string {
-    const Version = params.Version ?? "2.0";
-    const tradeInfo = this.buildTradeInfo({
-      MerchantID: this.merchantId,
-      RespondType: "JSON",
-      TimeStamp: Math.floor(new Date().getTime() / 1000),
-      Version,
-      LangType: "zh-tw",
-      ...params,
-    });
-    const tradeSha = this.buildTradeSha(tradeInfo);
-
-    const html: string[] = [];
-    const paymentUrl = `${this.apiEndpoint}/MPG/mpg_gateway`;
-    const formId = `_auto_pay_Form_${new Date().getTime()}`;
-
-    html.push(`<form id="${formId}" method="post" action="${paymentUrl}">`);
-    html.push(
-      `<input type="hidden" name="MerchantID" value="${this.merchantId}" />`
-    );
-    html.push(`<input type="hidden" name="Version" value="${Version}" />`);
-    html.push(`<input type="hidden" name="TradeInfo" value="${tradeInfo}" />`);
-    html.push(`<input type="hidden" name="TradeSha" value="${tradeSha}" />`);
-
-    html.push("</form>");
-    html.push("<script>");
-    html.push(`document.getElementById("${formId}").submit();`);
-    html.push("</script>");
-    return html.join("\n");
+    return this.getFormHTML(params);
   }
 
   public async queryTradeInfo(params: QueryTradeInfoParams) {
@@ -266,6 +240,43 @@ class NewebpayClient {
       message,
       result,
     };
+  }
+
+  public getCreditCardAgreementFormHTML = (
+    params: CreditCardAgreementParams
+  ) => {
+    return this.getFormHTML(params);
+  };
+
+  private getFormHTML(params: any): string {
+    const Version = params.Version ?? "2.0";
+    const tradeInfo = this.buildTradeInfo({
+      MerchantID: this.merchantId,
+      RespondType: "JSON",
+      TimeStamp: Math.floor(new Date().getTime() / 1000),
+      Version,
+      LangType: "zh-tw",
+      ...params,
+    });
+    const tradeSha = this.buildTradeSha(tradeInfo);
+
+    const html: string[] = [];
+    const paymentUrl = `${this.apiEndpoint}/MPG/mpg_gateway`;
+    const formId = `_auto_pay_Form_${new Date().getTime()}`;
+
+    html.push(`<form id="${formId}" method="post" action="${paymentUrl}">`);
+    html.push(
+      `<input type="hidden" name="MerchantID" value="${this.merchantId}" />`
+    );
+    html.push(`<input type="hidden" name="Version" value="${Version}" />`);
+    html.push(`<input type="hidden" name="TradeInfo" value="${tradeInfo}" />`);
+    html.push(`<input type="hidden" name="TradeSha" value="${tradeSha}" />`);
+
+    html.push("</form>");
+    html.push("<script>");
+    html.push(`document.getElementById("${formId}").submit();`);
+    html.push("</script>");
+    return html.join("\n");
   }
 }
 
