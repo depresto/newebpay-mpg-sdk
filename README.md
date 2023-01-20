@@ -226,7 +226,7 @@ if (clientCheckCode === CheckCode) {
 
 ```javascript
 // 回傳付款跳轉 HTML 表單
-const tokenAgreementFormHTML = await client.getCreditCardTokenAgreementFormHTML({
+const tokenAgreementFormHTML = await client.getPaymentFormHTML({
   NotifyURL: "https://...", // 支付通知網址 必填
   ReturnURL: "https://...", // 支付完成返回商店網址 必填
   MerchantOrderNo: "1234", // 商店訂單編號 必填 限英、數字、”_ ”格式 / 長度限制為30字
@@ -236,8 +236,9 @@ const tokenAgreementFormHTML = await client.getCreditCardTokenAgreementFormHTML(
   Email: "test@example.comm", // 付款人電子信箱 必填
   TokenTerm: "User ID", // Token名稱 必填 可對應付款人之資料，用於綁定付款人與信用卡卡號時使用，例:會員編號、Email
   TokenLife: "2401", // Token有效日期 非必填 格式為YYMM，如2024/01為2401
-  ANDROIDPAYAGREEMENT: 1, // 約定Google Pay付款 非必填 0 | 1
-  SAMSUNGPAYAGREEMENT: 1, // 約定Samsung Pay付款 非必填 0 | 1
+  CREDITAGREEMENT: 1, // 約定信用卡付款 必填 1
+  ANDROIDPAYAGREEMENT: 0, // 約定Google Pay付款 非必填 0 | 1
+  SAMSUNGPAYAGREEMENT: 0, // 約定Samsung Pay付款 非必填 0 | 1
 });
 ```
 

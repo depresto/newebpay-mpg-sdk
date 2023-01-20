@@ -3,7 +3,6 @@ import axios, { AxiosRequestHeaders } from "axios";
 import FormData from "form-data";
 import {
   AddMerchantParams,
-  CreditCardAgreementTokenParams,
   CreditCardPaymentParams,
   PaymentParams,
   QueryTradeInfoParams,
@@ -46,6 +45,7 @@ class NewebpayClient {
 
   private buildTradeInfo(params: { [key: string]: any }) {
     const postData = new URLSearchParams(params).toString();
+    console.log(postData);
     const cipher = crypto.createCipheriv("aes256", this.hashKey, this.hashIV);
     let encrypted = cipher.update(postData, "utf8", "hex");
     encrypted += cipher.final("hex");
@@ -102,7 +102,35 @@ class NewebpayClient {
    * Generate Newebpay payment HTML form
    */
   public getPaymentFormHTML(params: PaymentParams): string {
-    return this.getFormHTML(params);
+    const Version = params.Version ?? "2.0";
+    const tradeInfo = this.buildTradeInfo({
+      MerchantID: this.merchantId,
+      RespondType: "JSON",
+      TimeStamp: Math.floor(new Date().getTime() / 1000),
+      Version,
+      LangType: "zh-tw",
+      LoginType: 0,
+      ...params,
+    });
+    const tradeSha = this.buildTradeSha(tradeInfo);
+
+    const html: string[] = [];
+    const paymentUrl = `${this.apiEndpoint}/MPG/mpg_gateway`;
+    const formId = `_auto_pay_Form_${new Date().getTime()}`;
+
+    html.push(`<form id="${formId}" method="post" action="${paymentUrl}">`);
+    html.push(
+      `<input type="hidden" name="MerchantID" value="${this.merchantId}" />`
+    );
+    html.push(`<input type="hidden" name="Version" value="${Version}" />`);
+    html.push(`<input type="hidden" name="TradeInfo" value="${tradeInfo}" />`);
+    html.push(`<input type="hidden" name="TradeSha" value="${tradeSha}" />`);
+
+    html.push("</form>");
+    html.push("<script>");
+    html.push(`document.getElementById("${formId}").submit();`);
+    html.push("</script>");
+    return html.join("\n");
   }
 
   public async queryTradeInfo(params: QueryTradeInfoParams) {
@@ -243,15 +271,6 @@ class NewebpayClient {
     };
   }
 
-  public getCreditCardTokenAgreementFormHTML = (
-    params: CreditCardAgreementTokenParams
-  ) => {
-    return this.getFormHTML({
-      ...params,
-      CREDITAGREEMENT: 1,
-    });
-  };
-
   public requestCreditCardPayment = async (params: CreditCardPaymentParams) => {
     const formData = new FormData();
     formData.append("MerchantID_", this.merchantId);
@@ -280,37 +299,6 @@ class NewebpayClient {
     const data = response.data as TradeInfo;
     return data;
   };
-
-  private getFormHTML(params: any): string {
-    const Version = params.Version ?? "2.0";
-    const tradeInfo = this.buildTradeInfo({
-      MerchantID: this.merchantId,
-      RespondType: "JSON",
-      TimeStamp: Math.floor(new Date().getTime() / 1000),
-      Version,
-      LangType: "zh-tw",
-      ...params,
-    });
-    const tradeSha = this.buildTradeSha(tradeInfo);
-
-    const html: string[] = [];
-    const paymentUrl = `${this.apiEndpoint}/MPG/mpg_gateway`;
-    const formId = `_auto_pay_Form_${new Date().getTime()}`;
-
-    html.push(`<form id="${formId}" method="post" action="${paymentUrl}">`);
-    html.push(
-      `<input type="hidden" name="MerchantID" value="${this.merchantId}" />`
-    );
-    html.push(`<input type="hidden" name="Version" value="${Version}" />`);
-    html.push(`<input type="hidden" name="TradeInfo" value="${tradeInfo}" />`);
-    html.push(`<input type="hidden" name="TradeSha" value="${tradeSha}" />`);
-
-    html.push("</form>");
-    html.push("<script>");
-    html.push(`document.getElementById("${formId}").submit();`);
-    html.push("</script>");
-    return html.join("\n");
-  }
 }
 
 export default NewebpayClient;

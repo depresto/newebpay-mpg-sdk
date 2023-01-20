@@ -94,6 +94,12 @@ export type PaymentParams = {
   EZPWECHAT?: 0 | 1;
   EZPALIPAY?: 0 | 1;
   LgsType?: "B2C" | "C2C";
+
+  CREDITAGREEMENT?: 1;
+  ANDROIDPAYAGREEMENT?: 1;
+  SAMSUNGPAYAGREEMENT?: 1;
+  TokenTerm?: string;
+  TokenLife?: string;
 };
 
 export type QueryTradeInfoParams = {
@@ -124,7 +130,7 @@ export type RefundEWalletParams = {
 };
 
 export type AddMerchantParams = {
-  Version?: string;
+  Version?: "2.0" | string;
   MemberUnified: string;
   RepresentName?: string;
   ManagerID?: string;
@@ -183,16 +189,16 @@ export type AddMerchantParams = {
 
 export type CreditCardAgreementTokenParams = PaymentParams & {
   Version?: "2.0";
-  CREDITAGREEMENT: 1;
+  CREDITAGREEMENT?: 1;
   ANDROIDPAYAGREEMENT?: 1;
   SAMSUNGPAYAGREEMENT?: 1;
-  TokenTerm: string;
+  TokenTerm?: string;
   TokenLife?: string;
 };
 
 export type CreditCardPaymentParams = {
-  Version?: "1.1" | '2.0';
-  MerchantID?: string
+  Version?: "1.1" | "2.0";
+  MerchantID?: string;
   P3D?: 0 | 1;
   NotifyURL?: string;
   ReturnURL?: string;
@@ -216,7 +222,7 @@ export type CreditCardPaymentParams = {
   NTCBEnd?: string;
   TokenValue?: string;
   TokenTerm?: string;
-  TokenSwitch?: "on" | 'get';
+  TokenSwitch?: "on" | "get";
   TokenLife?: string;
 };
 
