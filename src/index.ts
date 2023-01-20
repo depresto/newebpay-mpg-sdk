@@ -181,7 +181,7 @@ export type AddMerchantParams = {
   NotifyURL?: string;
 };
 
-export type CreditCardAgreementParams = PaymentParams & {
+export type CreditCardAgreementTokenParams = PaymentParams & {
   Version?: "2.0";
   CREDITAGREEMENT: 1;
   ANDROIDPAYAGREEMENT?: 1;
@@ -190,11 +190,38 @@ export type CreditCardAgreementParams = PaymentParams & {
   TokenLife?: string;
 };
 
-export type CreditCardAgreementPaymentParams = {
+export type CreditCardPaymentParams = {
+  Version?: "1.1";
+  MerchantID?: string
+  P3D?: 0 | 1;
+  NotifyURL?: string;
+  ReturnURL?: string;
+  MerchantOrderNo: string;
+  Amt: number;
+  ProdDesc: string;
+  PayerEmail: string;
+  Inst?: 0 | 3 | 6 | 12 | 18 | 24 | 30;
+  Red?: 0 | 1;
+  CardAE?: 0 | 1;
+  CardNo?: string;
+  Exp?: string;
+  CVC?: string;
+  APPLEPAY?: string;
+  APPLEPAYTYPE?: "01" | "02";
+  ANDROIDPAY?: string;
+  SAMSUNGPAY?: string;
+  NTCB?: 0 | 1;
+  NTCBArea?: string;
+  NTCBStart?: string;
+  NTCBEnd?: string;
+};
+
+export type CreditCardTokenPaymentParams = CreditCardPaymentParams & {
   Version?: "2.0";
   TokenValue: string;
   TokenTerm: string;
-  TokenSwitch: 'on';
-}
+  TokenSwitch: "on" | 'get';
+  TokenLife?: string;
+};
 
 export default NewebpayClient;

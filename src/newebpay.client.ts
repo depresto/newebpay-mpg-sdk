@@ -3,7 +3,9 @@ import axios, { AxiosRequestHeaders } from "axios";
 import FormData from "form-data";
 import {
   AddMerchantParams,
-  CreditCardAgreementParams,
+  CreditCardAgreementTokenParams,
+  CreditCardPaymentParams,
+  CreditCardTokenPaymentParams,
   PaymentParams,
   QueryTradeInfoParams,
   RefundCreditCardParams,
@@ -242,10 +244,71 @@ class NewebpayClient {
     };
   }
 
-  public getCreditCardAgreementFormHTML = (
-    params: CreditCardAgreementParams
+  public getCreditCardAgreementTokenFormHTML = (
+    params: CreditCardAgreementTokenParams
   ) => {
     return this.getFormHTML(params);
+  };
+
+  public requestCreditCardPayment = async (params: CreditCardPaymentParams) => {
+    const formData = new FormData();
+    formData.append("MerchantID_", this.merchantId);
+    formData.append(
+      "PostData_",
+      this.buildTradeInfo({
+        MerchantID: this.merchantId,
+        TimeStamp: Math.floor(new Date().getTime() / 1000),
+        Version: "1.1",
+        ...params,
+      })
+    );
+    formData.append("Pos_", "JSON");
+
+    const headers: AxiosRequestHeaders = {};
+    headers["Content-Type"] = "multipart/form-data";
+    if (this.proxySecret) headers["proxy-secret"] = this.proxySecret;
+
+    const response = await axios({
+      method: "post",
+      url: `${this.apiEndpoint}/API/CreditCard`,
+      data: formData,
+      headers,
+    });
+
+    const data = response.data as TradeInfo;
+    return data;
+  };
+
+  public requestCreditCardTokenPayment = async (
+    params: CreditCardTokenPaymentParams
+  ) => {
+    const formData = new FormData();
+    formData.append("MerchantID_", this.merchantId);
+    formData.append(
+      "PostData_",
+      this.buildTradeInfo({
+        MerchantID: this.merchantId,
+        TimeStamp: Math.floor(new Date().getTime() / 1000),
+        Version: "2.0",
+        P3D: 0,
+        ...params,
+      })
+    );
+    formData.append("Pos_", "JSON");
+
+    const headers: AxiosRequestHeaders = {};
+    headers["Content-Type"] = "multipart/form-data";
+    if (this.proxySecret) headers["proxy-secret"] = this.proxySecret;
+
+    const response = await axios({
+      method: "post",
+      url: `${this.apiEndpoint}/API/CreditCard`,
+      data: formData,
+      headers,
+    });
+
+    const data = response.data as TradeInfo;
+    return data;
   };
 
   private getFormHTML(params: any): string {
