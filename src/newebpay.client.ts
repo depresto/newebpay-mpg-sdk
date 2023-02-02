@@ -16,7 +16,6 @@ class NewebpayClient {
   merchantId: string;
   hashKey: string;
   hashIV: string;
-  dryRun: boolean;
   apiEndpoint: string;
   proxySecret?: string;
 
@@ -29,23 +28,23 @@ class NewebpayClient {
     proxyEndpoint?: string;
     proxySecret?: string;
   }) {
+    const dryRun = params.env === "sandbox";
+
     this.partnerId = params.partnerId ?? null;
     this.merchantId = params.merchantId;
     this.hashKey = params.hashKey;
     this.hashIV = params.hashIV;
-    this.dryRun = params.env === "sandbox";
 
     this.proxySecret = params.proxySecret;
     this.apiEndpoint = params.proxyEndpoint
       ? params.proxyEndpoint
-      : this.dryRun === true
+      : dryRun === true
       ? "https://ccore.newebpay.com"
       : "https://core.newebpay.com";
   }
 
   private buildTradeInfo(params: { [key: string]: any }) {
     const postData = new URLSearchParams(params).toString();
-    console.log(postData);
     const cipher = crypto.createCipheriv("aes256", this.hashKey, this.hashIV);
     let encrypted = cipher.update(postData, "utf8", "hex");
     encrypted += cipher.final("hex");

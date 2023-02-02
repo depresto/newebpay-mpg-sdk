@@ -2,29 +2,28 @@ import NewebpayClient from "./newebpay.client";
 
 test("buildCheckCode", async () => {
   const client = new NewebpayClient({
-    merchantId: "ABC1422967",
-    hashKey: "abcdefg",
-    hashIV: "1234567",
+    merchantId: "MS12345678",
+    hashKey: "AAAvw3YlqoEk6G4HqRKDAYpHKZWxBBB",
+    hashIV: "AAAC1FplieBBB",
     env: "sandbox",
   });
   const data = client.buildCheckCode({
-    MerchantID: "ABC1422967",
-    Date: "2015-01-01 00:00:00",
-    UseInfo: "ON",
-    CreditInst: "ON",
-    CreditRed: "ON",
+    MerchantID: "TWD987086921",
+    Amt: 10,
+    MerchantOrderNo: "MyCompanyOrder_1638423361",
+    TradeNo: "21120214151152468",
   });
 
   expect(data).toBe(
-    "77A1EF8F23C94CB63A60A7EDF99AC3E0F4688D96AF6D4B34370D306ABD33D0F6"
+    "34303E4A134D1F06346AAC43080BBFC7E89F7F46B219C9D2F194EF926ADA8B45"
   );
 });
 
 test("getPaymentFormHTML for credit card agreement", async () => {
   const client = new NewebpayClient({
-    merchantId: "ABC1422967",
-    hashKey: "abcdefg",
-    hashIV: "1234567",
+    merchantId: "MS12345678",
+    hashKey: "AAAvw3YlqoEk6G4HqRKDAYpHKZWxBBB",
+    hashIV: "AAAC1FplieBBB",
     env: "sandbox",
   });
   const data = client.getPaymentFormHTML({
