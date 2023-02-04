@@ -56,6 +56,9 @@ export type TradeInfoResult = {
 
   ExpireDate?: string;
   BankCode?: string;
+
+  TokenValue?: string;
+  TokenLife?: string;
 };
 
 export type PaymentParams = {
