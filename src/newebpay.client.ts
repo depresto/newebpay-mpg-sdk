@@ -4,6 +4,7 @@ import FormData from "form-data";
 import {
   AddMerchantParams,
   CreditCardPaymentParams,
+  ModifyMerchantParams,
   PaymentParams,
   QueryTradeInfoParams,
   RefundCreditCardParams,
@@ -256,6 +257,46 @@ class NewebpayClient {
     const { data } = await axios({
       method: "post",
       url: `${this.apiEndpoint}/API/AddMerchant`,
+      data: formData,
+      headers,
+    });
+    const status = data.status as string;
+    const message = data.message as string;
+    const result = data.result as { [key: string]: any };
+
+    return {
+      status,
+      message,
+      result,
+    };
+  }
+
+  /**
+   * Modify an existing Newebpay merchant with partner API
+   */
+  public async modifyMerchant(params: ModifyMerchantParams) {
+    if (!this.partnerId) {
+      throw new Error("Please provide PartnerID");
+    }
+
+    const formData = new FormData();
+    formData.append("PartnerID_", this.partnerId);
+    formData.append(
+      "PostData_",
+      this.buildTradeInfo({
+        TimeStamp: Math.floor(new Date().getTime() / 1000),
+        Version: params.Version ?? "1.7",
+        ...params,
+      })
+    );
+
+    const headers: AxiosRequestHeaders = {};
+    headers["Content-Type"] = "multipart/form-data";
+    if (this.proxySecret) headers["proxy-secret"] = this.proxySecret;
+
+    const { data } = await axios({
+      method: "post",
+      url: `${this.apiEndpoint}/API/AddMerchant/modify`,
       data: formData,
       headers,
     });

@@ -190,6 +190,11 @@ export type AddMerchantParams = {
   NotifyURL?: string;
 };
 
+export type ModifyMerchantParams=Partial<AddMerchantParams> & {
+  Version?: "1.7" | string;
+  MerchantID: string;
+}
+
 export type CreditCardAgreementTokenParams = PaymentParams & {
   Version?: "2.0";
   CREDITAGREEMENT?: 1;
