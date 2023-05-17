@@ -111,14 +111,23 @@ export type QueryTradeInfoParams = {
   Gateway?: "Composite";
 };
 
-export type RefundCreditCardParams = {
-  Amt: number;
-  MerchantOrderNo: string;
-  IndexType: 1 | 2;
-  TradeNo: string;
-  CloseType: 1 | 2;
-  Cancel?: 1;
-};
+export type RefundCreditCardParams =
+  | {
+      Amt: number;
+      MerchantOrderNo: string;
+      IndexType: 1;
+      TradeNo?: string;
+      CloseType: 1 | 2;
+      Cancel?: 1;
+    }
+  | {
+      Amt: number;
+      MerchantOrderNo?: string;
+      IndexType: 2;
+      TradeNo: string;
+      CloseType: 1 | 2;
+      Cancel?: 1;
+    };
 
 export type RefundEWalletParams = {
   MerchantOrderNo: string;
@@ -190,10 +199,10 @@ export type AddMerchantParams = {
   NotifyURL?: string;
 };
 
-export type ModifyMerchantParams=Partial<AddMerchantParams> & {
+export type ModifyMerchantParams = Partial<AddMerchantParams> & {
   Version?: "1.7" | string;
   MerchantID: string;
-}
+};
 
 export type CreditCardAgreementTokenParams = PaymentParams & {
   Version?: "2.0";
