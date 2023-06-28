@@ -3,6 +3,7 @@ import axios, { AxiosRequestHeaders } from "axios";
 import FormData from "form-data";
 import {
   AddMerchantParams,
+  ChargeMerchantResult,
   CreditCardPaymentParams,
   ModifyMerchantParams,
   PaymentParams,
@@ -309,6 +310,38 @@ class NewebpayClient {
       message,
       result,
     };
+  }
+
+  /**
+   * Charge a Newebpay merchant with partner API
+   */
+  public async chargeMerchant(params: AddMerchantParams) {
+    if (!this.partnerId) {
+      throw new Error("Please provide PartnerID");
+    }
+
+    const formData = new FormData();
+    formData.append("PartnerID_", this.partnerId);
+    formData.append(
+      "PostData_",
+      this.buildTradeInfo({
+        TimeStamp: Math.floor(new Date().getTime() / 1000),
+        Version: params.Version ?? "1.1",
+        ...params,
+      })
+    );
+
+    const headers: AxiosRequestHeaders = {};
+    headers["Content-Type"] = "multipart/form-data";
+    if (this.proxySecret) headers["proxy-secret"] = this.proxySecret;
+
+    const { data } = await axios({
+      method: "post",
+      url: `${this.apiEndpoint}/API/ChargeInstruct`,
+      data: formData,
+      headers,
+    });
+    return data as ChargeMerchantResult;
   }
 
   public requestCreditCardPayment = async (params: CreditCardPaymentParams) => {

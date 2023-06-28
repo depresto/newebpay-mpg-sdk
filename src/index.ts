@@ -199,6 +199,23 @@ export type AddMerchantParams = {
   NotifyURL?: string;
 };
 
+export type ChargeMerchantParams = {
+  MerchantID: string;
+  MerTrade?: string;
+  Amount: number;
+  FeeType: "0" | "1" | "2" | "3" | "4";
+  BalanceType: "0" | "1";
+  AppointMerID?: string;
+};
+export type ChargeMerchantResult = {
+  Status: "SUCCESS" | string;
+  Message: string;
+  MerchantID: string;
+  FundTime: string;
+  MerTrade: string;
+  ExeNo: string;
+};
+
 export type ModifyMerchantParams = Partial<AddMerchantParams> & {
   Version?: "1.7" | string;
   MerchantID: string;

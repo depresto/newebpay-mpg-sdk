@@ -320,3 +320,27 @@ const {
   TokenValue: "", // 首次約定付款回傳之TokenValue 必填
 });
 ```
+
+### Charge a Partner store
+
+平台費用扣款
+
+詳情請見官方文件：(金流合作推廣商平台 費用扣款指示 技術串接手冊)
+
+```javascript
+const {
+  Status,
+  Message,
+  MerchantID, // 藍新金流商店代號
+  FundTime, // 預計撥款日
+  MerTrade, // 自訂編號
+  ExeNo, // 處理流水號
+} = await client.chargeMerchant({
+  MerchantID: "商店代號",
+  MerTrade: "自訂編號",
+  Amount: 100,
+  FeeType: '1', // 0:平台交易手續費 1:佣金費用 2:退款費用 3:物流費用 4:其他費用
+  BalanceType: '0', // 本次交易的正負值 0為正向，1為負向
+  AppointMerID: "收款商店代號", // 選填，若需將扣款合作商店金額寫入指定商 店餘額請帶此參數
+});
+```
