@@ -117,6 +117,23 @@ const {
 });
 ```
 
+### Cancel an Credit Card Order (取消授權 [NPA-B01])
+
+詳情請見官方文件：[文件網址](https://www.newebpay.com/website/Page/download_file?name=Online%20Payment-Foreground%20Scenario%20API%20Specification_NDNF-1.0.7.pdf)
+
+```javascript
+const {
+  Status, // 回傳狀態 若請退款成功則回傳 SUCCESS
+  Message,
+  Result: { MerchantID, Amt, TradeNo, MerchantOrderNo },
+} = await client.cancelCreditCard({
+  MerchantOrderNo: "2020072812000000", // 訂單編號 必填
+  Amt: 1000, // 訂單金額 必填
+  IndexType: 1, // 選用單號類別 必填 1 代表選用商店訂單編號 / 2 代表選用藍新金流交易序號
+  TradeNo: "2020072812000000", // 藍新金流交易序號 必填
+});
+```
+
 ### Refund an EWallet Order (電子錢包退款 [NPA-B06])
 
 詳情請見官方文件：[文件網址](https://www.newebpay.com/website/Page/download_file?name=NewebPay_Online%20Payment-Foreground%20Scenario%20API%20Specification_NDNF-1.0.1.pdf)
@@ -275,7 +292,7 @@ const {
   CardNo: "4000221111111111", // 信用卡卡號 必填
   Exp: "234", // 信用卡到期日 必填
   CVC: "123", // 信用卡檢查碼 必填
-  TokenSwitch: 'get', // Token類別 必填 固定為get
+  TokenSwitch: "get", // Token類別 必填 固定為get
   TokenTerm: "User ID", // Token名稱 必填 可對應付款人之資料，用於綁定付款人與信用卡卡號時使用，例:會員編號、Email
   TokenLife: "2401", // Token有效日期 非必填 格式為YYMM，如2024/01為2401
 });
@@ -314,7 +331,7 @@ const {
   CardNo: "4000221111111111", // 信用卡卡號 必填
   Exp: "234", // 信用卡到期日 必填
   CVC: "123", // 信用卡檢查碼 必填
-  TokenSwitch: 'on', // Token類別 必填 固定為on
+  TokenSwitch: "on", // Token類別 必填 固定為on
   TokenTerm: "User ID", // Token名稱 必填 可對應付款人之資料，用於綁定付款人與信用卡卡號時使用，例:會員編號、Email
   TokenLife: "2401", // Token有效日期 非必填 格式為YYMM，如2024/01為2401
   TokenValue: "", // 首次約定付款回傳之TokenValue 必填
@@ -339,8 +356,8 @@ const {
   MerchantID: "商店代號",
   MerTrade: "自訂編號",
   Amount: 100,
-  FeeType: '1', // 0:平台交易手續費 1:佣金費用 2:退款費用 3:物流費用 4:其他費用
-  BalanceType: '0', // 本次交易的正負值 0為正向，1為負向
+  FeeType: "1", // 0:平台交易手續費 1:佣金費用 2:退款費用 3:物流費用 4:其他費用
+  BalanceType: "0", // 本次交易的正負值 0為正向，1為負向
   AppointMerID: "收款商店代號", // 選填，若需將扣款合作商店金額寫入指定商 店餘額請帶此參數
 });
 ```

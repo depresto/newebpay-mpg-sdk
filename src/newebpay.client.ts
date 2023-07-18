@@ -3,6 +3,7 @@ import axios, { AxiosRequestHeaders } from "axios";
 import FormData from "form-data";
 import {
   AddMerchantParams,
+  CancelCreditCardParams,
   ChargeMerchantResult,
   CreditCardPaymentParams,
   ModifyMerchantParams,
@@ -182,6 +183,35 @@ class NewebpayClient {
     const { data } = await axios({
       method: "post",
       url: `${this.apiEndpoint}/API/CreditCard/Close`,
+      data: formData,
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    const Status = data.Status as string;
+    const Message = data.Message as string;
+    const Result = data.Result as { [key: string]: any };
+
+    return {
+      Status,
+      Message,
+      Result,
+    };
+  }
+
+  public async cancelCreditCard(params: CancelCreditCardParams) {
+    const PostData_ = this.buildTradeInfo({
+      RespondType: "JSON",
+      TimeStamp: Math.floor(new Date().getTime() / 1000),
+      Version: "1.0",
+      ...params,
+    });
+
+    const formData = new FormData();
+    formData.append("MerchantID_", this.merchantId);
+    formData.append("PostData_", PostData_);
+
+    const { data } = await axios({
+      method: "post",
+      url: `${this.apiEndpoint}/API/CreditCard/Cancel`,
       data: formData,
       headers: { "Content-Type": "multipart/form-data" },
     });
