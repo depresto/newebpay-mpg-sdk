@@ -103,6 +103,7 @@ export type PaymentParams = {
   SAMSUNGPAYAGREEMENT?: 1;
   TokenTerm?: string;
   TokenLife?: string;
+  TokenTermDemand?: string;
 };
 
 export type QueryTradeInfoParams = {
