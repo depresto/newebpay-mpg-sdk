@@ -283,7 +283,10 @@ class NewebpayClient {
 
     const headers: AxiosRequestHeaders = {};
     headers["Content-Type"] = "multipart/form-data";
-    if (this.proxySecret) headers["proxy-secret"] = this.proxySecret;
+    if (this.proxySecret) {
+      headers["proxy-secret"] = this.proxySecret;
+      headers["proxy-type"] = "newebpay";
+    }
 
     const { data } = await axios({
       method: "post",
