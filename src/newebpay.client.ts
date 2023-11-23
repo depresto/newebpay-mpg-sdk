@@ -353,7 +353,7 @@ class NewebpayClient {
     return encrypted;
   }
 
-  private buildCheckCode(params: { [key: string]: any }) {
+  public buildCheckCode(params: { [key: string]: any }) {
     const data = Object.keys(params)
       .sort()
       .reduce((obj, key) => {
