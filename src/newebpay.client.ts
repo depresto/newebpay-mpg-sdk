@@ -46,24 +46,6 @@ class NewebpayClient {
       : "https://core.newebpay.com";
   }
 
-  private buildTradeInfo(params: { [key: string]: any }) {
-    const postData = new URLSearchParams(params).toString();
-    const cipher = crypto.createCipheriv("aes256", this.hashKey, this.hashIV);
-    let encrypted = cipher.update(postData, "utf8", "hex");
-    encrypted += cipher.final("hex");
-    return encrypted;
-  }
-
-  private buildTradeSha(tradeInfo: string) {
-    const hashData = `HashKey=${this.hashKey}&${tradeInfo}&HashIV=${this.hashIV}`;
-    const encrypted = crypto
-      .createHash("sha256")
-      .update(hashData)
-      .digest("hex")
-      .toUpperCase();
-    return encrypted;
-  }
-
   /**
    * Parse TradeInfo string from API
    *
@@ -80,24 +62,6 @@ class NewebpayClient {
     decrypted += decipher.final("utf8");
 
     return JSON.parse(decrypted.replace(/[\x00-\x20]+/g, "")) as TradeInfo;
-  }
-
-  public buildCheckCode(params: { [key: string]: any }) {
-    const data = Object.keys(params)
-      .sort()
-      .reduce((obj, key) => {
-        obj[key] = params[key];
-        return obj;
-      }, {} as { [key: string]: any });
-
-    const paramsStr = new URLSearchParams(data).toString();
-    const checkStr = `HashIV=${this.hashIV}&${paramsStr}&HashKey=${this.hashKey}`;
-
-    return crypto
-      .createHash("sha256")
-      .update(checkStr)
-      .digest("hex")
-      .toUpperCase();
   }
 
   /**
@@ -151,11 +115,9 @@ class NewebpayClient {
     formData.append("MerchantOrderNo", MerchantOrderNo);
     formData.append("Amt", Amt);
 
-    const { data } = await axios({
-      method: "post",
-      url: `${this.apiEndpoint}/API/QueryTradeInfo`,
+    const { data } = await this.sendApiRequest({
+      apiPath: "/API/QueryTradeInfo",
       data: formData,
-      headers: { "Content-Type": "multipart/form-data" },
     });
     const Status = data.Status as string;
     const Message = data.Message as string;
@@ -180,11 +142,9 @@ class NewebpayClient {
     formData.append("MerchantID_", this.merchantId);
     formData.append("PostData_", PostData_);
 
-    const { data } = await axios({
-      method: "post",
-      url: `${this.apiEndpoint}/API/CreditCard/Close`,
+    const { data } = await this.sendApiRequest({
+      apiPath: "/API/CreditCard/Close",
       data: formData,
-      headers: { "Content-Type": "multipart/form-data" },
     });
     const Status = data.Status as string;
     const Message = data.Message as string;
@@ -209,11 +169,9 @@ class NewebpayClient {
     formData.append("MerchantID_", this.merchantId);
     formData.append("PostData_", PostData_);
 
-    const { data } = await axios({
-      method: "post",
-      url: `${this.apiEndpoint}/API/CreditCard/Cancel`,
+    const { data } = await this.sendApiRequest({
+      apiPath: "/API/CreditCard/Cancel",
       data: formData,
-      headers: { "Content-Type": "multipart/form-data" },
     });
     const Status = data.Status as string;
     const Message = data.Message as string;
@@ -240,11 +198,9 @@ class NewebpayClient {
     formData.append("RespondType_", "JSON");
     formData.append("HashData_", HashData_);
 
-    const { data } = await axios({
-      method: "post",
-      url: `${this.apiEndpoint}/API/EWallet/refund`,
+    const { data } = await this.sendApiRequest({
+      apiPath: "/API/EWallet/refund",
       data: formData,
-      headers: { "Content-Type": "multipart/form-data" },
     });
     const Status = data.Status as string;
     const Message = data.Message as string;
@@ -281,18 +237,9 @@ class NewebpayClient {
       })
     );
 
-    const headers: AxiosRequestHeaders = {};
-    headers["Content-Type"] = "multipart/form-data";
-    if (this.proxySecret) {
-      headers["proxy-secret"] = this.proxySecret;
-      headers["proxy-type"] = "newebpay";
-    }
-
-    const { data } = await axios({
-      method: "post",
-      url: `${this.apiEndpoint}/API/AddMerchant`,
+    const { data } = await this.sendApiRequest({
+      apiPath: "/API/AddMerchant/modify",
       data: formData,
-      headers,
     });
     const status = data.status as string;
     const message = data.message as string;
@@ -324,15 +271,9 @@ class NewebpayClient {
       })
     );
 
-    const headers: AxiosRequestHeaders = {};
-    headers["Content-Type"] = "multipart/form-data";
-    if (this.proxySecret) headers["proxy-secret"] = this.proxySecret;
-
-    const { data } = await axios({
-      method: "post",
-      url: `${this.apiEndpoint}/API/AddMerchant/modify`,
+    const { data } = await this.sendApiRequest({
+      apiPath: "/API/AddMerchant/modify",
       data: formData,
-      headers,
     });
     const status = data.status as string;
     const message = data.message as string;
@@ -364,16 +305,11 @@ class NewebpayClient {
       })
     );
 
-    const headers: AxiosRequestHeaders = {};
-    headers["Content-Type"] = "multipart/form-data";
-    if (this.proxySecret) headers["proxy-secret"] = this.proxySecret;
-
-    const { data } = await axios({
-      method: "post",
-      url: `${this.apiEndpoint}/API/ChargeInstruct`,
+    const { data } = await this.sendApiRequest({
+      apiPath: "/API/ChargeInstruct",
       data: formData,
-      headers,
     });
+
     return data as ChargeMerchantResult;
   }
 
@@ -391,19 +327,64 @@ class NewebpayClient {
     );
     formData.append("Pos_", "JSON");
 
-    const headers: AxiosRequestHeaders = {};
-    headers["Content-Type"] = "multipart/form-data";
-    if (this.proxySecret) headers["proxy-secret"] = this.proxySecret;
-
-    const response = await axios({
-      method: "post",
-      url: `${this.apiEndpoint}/API/CreditCard`,
+    const { data } = await this.sendApiRequest({
+      apiPath: "/API/CreditCard/Close",
       data: formData,
-      headers,
     });
 
-    const data = response.data as TradeInfo;
-    return data;
+    return data as TradeInfo;
+  };
+
+  private buildTradeInfo(params: { [key: string]: any }) {
+    const postData = new URLSearchParams(params).toString();
+    const cipher = crypto.createCipheriv("aes256", this.hashKey, this.hashIV);
+    let encrypted = cipher.update(postData, "utf8", "hex");
+    encrypted += cipher.final("hex");
+    return encrypted;
+  }
+
+  private buildTradeSha(tradeInfo: string) {
+    const hashData = `HashKey=${this.hashKey}&${tradeInfo}&HashIV=${this.hashIV}`;
+    const encrypted = crypto
+      .createHash("sha256")
+      .update(hashData)
+      .digest("hex")
+      .toUpperCase();
+    return encrypted;
+  }
+
+  private buildCheckCode(params: { [key: string]: any }) {
+    const data = Object.keys(params)
+      .sort()
+      .reduce((obj, key) => {
+        obj[key] = params[key];
+        return obj;
+      }, {} as { [key: string]: any });
+
+    const paramsStr = new URLSearchParams(data).toString();
+    const checkStr = `HashIV=${this.hashIV}&${paramsStr}&HashKey=${this.hashKey}`;
+
+    return crypto
+      .createHash("sha256")
+      .update(checkStr)
+      .digest("hex")
+      .toUpperCase();
+  }
+
+  private sendApiRequest = async (params: { apiPath: string; data: any }) => {
+    const headers: AxiosRequestHeaders = {};
+    headers["Content-Type"] = "multipart/form-data";
+    if (this.proxySecret) {
+      headers["proxy-secret"] = this.proxySecret;
+      headers["proxy-type"] = "newebpay";
+    }
+
+    return await axios({
+      method: "post",
+      url: `${this.apiEndpoint}${params.apiPath}`,
+      data: params.data,
+      headers,
+    });
   };
 }
 
