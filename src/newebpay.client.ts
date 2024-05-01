@@ -238,7 +238,7 @@ class NewebpayClient {
     );
 
     const { data } = await this.sendApiRequest({
-      apiPath: "/API/AddMerchant/modify",
+      apiPath: "/API/AddMerchant",
       data: formData,
     });
     const status = data.status as string;
