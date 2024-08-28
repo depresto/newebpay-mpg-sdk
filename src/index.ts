@@ -78,6 +78,8 @@ export type PaymentParams = {
   LoginType?: 0 | 1;
   OrderComment?: string;
   CREDIT?: 0 | 1;
+  CREDITAE?: 0 | 1;
+  APPLEPAY?: 0 | 1;
   ANDROIDPAY?: 0 | 1;
   SAMSUNGPAY?: 0 | 1;
   LINEPAY?: 0 | 1;
