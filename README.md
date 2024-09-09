@@ -59,6 +59,7 @@ client.getPaymentFormHTML({
   LangType: "zh-tw", // 語系 非必填 'zh-tw' | 'en' | 'jp'
   LoginType: 0, // 是否登入藍新金流會員 非必填 1 | 0
   CREDIT: 1, // 信用卡一次付清啟用 非必填 1 | 0
+  APPLEPAY: 0, // Apple Pay 啟用 非必填 1 | 0
   ANDROIDPAY: 0, // Google Pay 啟用 非必填 1 | 0
   SAMSUNGPAY: 0, // Samsung Pay 啟用 非必填 1 | 0
   LINEPAY: 0, // Line Pay 啟用 非必填 1 | 0
