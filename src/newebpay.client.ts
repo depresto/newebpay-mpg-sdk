@@ -335,7 +335,7 @@ class NewebpayClient {
     return data as TradeInfo;
   };
 
-  private buildTradeInfo(params: { [key: string]: any }) {
+  public buildTradeInfo(params: { [key: string]: any }) {
     const postData = new URLSearchParams(params).toString();
     const cipher = crypto.createCipheriv("aes256", this.hashKey, this.hashIV);
     let encrypted = cipher.update(postData, "utf8", "hex");
@@ -343,7 +343,7 @@ class NewebpayClient {
     return encrypted;
   }
 
-  private buildTradeSha(tradeInfo: string) {
+  public buildTradeSha(tradeInfo: string) {
     const hashData = `HashKey=${this.hashKey}&${tradeInfo}&HashIV=${this.hashIV}`;
     const encrypted = crypto
       .createHash("sha256")
@@ -371,7 +371,7 @@ class NewebpayClient {
       .toUpperCase();
   }
 
-  private sendApiRequest = async (params: { apiPath: string; data: any }) => {
+  public sendApiRequest = async (params: { apiPath: string; data: any }) => {
     const headers: AxiosRequestHeaders = {};
     headers["Content-Type"] = "multipart/form-data";
     if (this.proxySecret) {
