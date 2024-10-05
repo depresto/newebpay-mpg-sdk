@@ -52,16 +52,22 @@ class NewebpayClient {
    * @param tradeInfo - API TradeInfo string
    */
   public parseTradeInfo(tradeInfo: string) {
+    const decrypted = this.decryptAESString(tradeInfo);
+
+    return JSON.parse(decrypted) as TradeInfo;
+  }
+
+  public decryptAESString(encrypted: string) {
     const decipher = crypto.createDecipheriv(
       "aes256",
       this.hashKey,
       this.hashIV
     );
     decipher.setAutoPadding(false);
-    let decrypted = decipher.update(tradeInfo, "hex", "utf8");
+    let decrypted = decipher.update(encrypted, "hex", "utf8");
     decrypted += decipher.final("utf8");
 
-    return JSON.parse(decrypted.replace(/[\x00-\x20]+/g, "")) as TradeInfo;
+    return decrypted.replace(/[\x00-\x20]+/g, "");
   }
 
   /**
@@ -337,8 +343,13 @@ class NewebpayClient {
 
   public buildTradeInfo(params: { [key: string]: any }) {
     const postData = new URLSearchParams(params).toString();
+    const encrypted = this.encryptAESString(postData);
+    return encrypted;
+  }
+
+  public encryptAESString(plainText: string) {
     const cipher = crypto.createCipheriv("aes256", this.hashKey, this.hashIV);
-    let encrypted = cipher.update(postData, "utf8", "hex");
+    let encrypted = cipher.update(plainText, "utf8", "hex");
     encrypted += cipher.final("hex");
     return encrypted;
   }
