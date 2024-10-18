@@ -14,7 +14,7 @@ import {
   TradeInfo,
 } from ".";
 
-class NewebpayClient {
+export class NewebpayClient {
   partnerId: string | null;
   merchantId: string;
   hashKey: string;

@@ -1,4 +1,4 @@
-import NewebpayClient from "./newebpay.client";
+import { NewebpayClient } from "./newebpay.client";
 
 export type TradeInfo = {
   Status: "SUCCESS" | string;
@@ -277,4 +277,5 @@ export type CreditCardPaymentParams = {
   TokenLife?: string;
 };
 
+export { NewebpayClient };
 export default NewebpayClient;
