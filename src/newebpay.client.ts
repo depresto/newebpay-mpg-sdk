@@ -191,10 +191,11 @@ export class NewebpayClient {
   }
 
   public async refundEWallet(params: RefundEWalletParams) {
-    const EncryptData_ = this.buildTradeInfo({
+    const data_ = JSON.stringify({
       TimeStamp: Math.floor(new Date().getTime() / 1000),
       ...params,
     });
+    const EncryptData_ = this.encryptAESString(data_);
     const HashData_ = this.buildTradeSha(EncryptData_);
 
     const formData = new FormData();
@@ -208,6 +209,7 @@ export class NewebpayClient {
       apiPath: "/API/EWallet/refund",
       data: formData,
     });
+    console.log(data);
     const Status = data.Status as string;
     const Message = data.Message as string;
     const UID = data.UID as string;
