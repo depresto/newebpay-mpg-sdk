@@ -6,8 +6,8 @@ import {
   CancelCreditCardParams,
   ChargeMerchantResult,
   CreditCardPaymentParams,
+  GetPaymentFormHTMLParams,
   ModifyMerchantParams,
-  PaymentParams,
   QueryTradeInfoParams,
   RefundCreditCardParams,
   RefundEWalletParams,
@@ -73,7 +73,7 @@ export class NewebpayClient {
   /**
    * Generate Newebpay payment HTML form
    */
-  public getPaymentFormHTML(params: PaymentParams): string {
+  public getPaymentFormHTML(params: GetPaymentFormHTMLParams): string {
     const Version = params.Version ?? "2.0";
     const tradeInfo = this.buildTradeInfo({
       MerchantID: this.merchantId,
@@ -135,6 +135,8 @@ export class NewebpayClient {
       Result,
     };
   }
+
+  public async createPeriodicPayment(params: CreatePeriodicPaymentParams) {}
 
   public async refundCreditCard(params: RefundCreditCardParams) {
     const PostData_ = this.buildTradeInfo({
