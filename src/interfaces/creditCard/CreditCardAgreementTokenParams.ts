@@ -1,4 +1,4 @@
-import { GetPaymentFormHTMLParams } from "./GetPaymentFormHTMLParams";
+import { GetPaymentFormHTMLParams } from "./mpg/GetPaymentFormHTMLParams";
 
 export type CreditCardAgreementTokenParams = GetPaymentFormHTMLParams & {
   Version?: "2.0";

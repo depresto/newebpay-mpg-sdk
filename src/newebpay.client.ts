@@ -5,6 +5,7 @@ import {
   AddMerchantParams,
   CancelCreditCardParams,
   ChargeMerchantResult,
+  CreatePeriodicPaymentParams,
   CreditCardPaymentParams,
   GetPaymentFormHTMLParams,
   ModifyMerchantParams,
@@ -136,7 +137,9 @@ export class NewebpayClient {
     };
   }
 
-  public async createPeriodicPayment(params: CreatePeriodicPaymentParams) {}
+  public async createPeriodicPayment(params: CreatePeriodicPaymentParams) {
+    
+  }
 
   public async refundCreditCard(params: RefundCreditCardParams) {
     const PostData_ = this.buildTradeInfo({
@@ -211,7 +214,6 @@ export class NewebpayClient {
       apiPath: "/API/EWallet/refund",
       data: formData,
     });
-    console.log(data);
     const Status = data.Status as string;
     const Message = data.Message as string;
     const UID = data.UID as string;

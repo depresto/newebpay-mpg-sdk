@@ -1,16 +1,17 @@
-import { AddMerchantParams } from "./interfaces/AddMerchantParams";
-import { CancelCreditCardParams } from "./interfaces/CancelCreditCardParams";
-import { ChargeMerchantParams } from "./interfaces/ChargeMerchantParams";
-import { ChargeMerchantResult } from "./interfaces/ChargeMerchantResult";
-import { CreditCardAgreementTokenParams } from "./interfaces/CreditCardAgreementTokenParams";
-import { CreditCardPaymentParams } from "./interfaces/CreditCardPaymentParams";
-import { GetPaymentFormHTMLParams } from "./interfaces/GetPaymentFormHTMLParams";
-import { ModifyMerchantParams } from "./interfaces/ModifyMerchantParams";
+import { AddMerchantParams } from "./interfaces/merchant/AddMerchantParams";
+import { ModifyMerchantParams } from "./interfaces/merchant/ModifyMerchantParams";
+import { ChargeMerchantParams } from "./interfaces/merchant/ChargeMerchantParams";
+import { ChargeMerchantResult } from "./interfaces/merchant/ChargeMerchantResult";
+import { CancelCreditCardParams } from "./interfaces/creditCard/CancelCreditCardParams";
+import { CreditCardAgreementTokenParams } from "./interfaces/creditCard/CreditCardAgreementTokenParams";
+import { CreditCardPaymentParams } from "./interfaces/creditCard/CreditCardPaymentParams";
+import { RefundCreditCardParams } from "./interfaces/creditCard/RefundCreditCardParams";
+import { GetPaymentFormHTMLParams } from "./interfaces/mpg/GetPaymentFormHTMLParams";
 import { QueryTradeInfoParams } from "./interfaces/QueryTradeInfoParams";
-import { RefundCreditCardParams } from "./interfaces/RefundCreditCardParams";
 import { RefundEWalletParams } from "./interfaces/RefundEWalletParams";
 import { TradeInfo } from "./interfaces/TradeInfo";
 import { TradeInfoResult } from "./interfaces/TradeInfoResult";
+import { CreatePeriodicPaymentParams } from "./interfaces/period/CreatePeriodicPaymentParams";
 import { NewebpayClient } from "./newebpay.client";
 
 export {
@@ -24,6 +25,7 @@ export {
   RefundEWalletParams,
   CreditCardAgreementTokenParams,
   CreditCardPaymentParams,
+  CreatePeriodicPaymentParams,
   AddMerchantParams,
   ChargeMerchantParams,
   ChargeMerchantResult,
