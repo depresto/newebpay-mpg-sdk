@@ -1,4 +1,5 @@
 import NewebpayClient from "./newebpay.client";
+import fs from "fs";
 
 const merchantId = process.env.TEST_MERCHANT_ID || "";
 const hashKey = process.env.TEST_HASH_KEY || "";
@@ -77,4 +78,21 @@ test("createPeriodicPaymentHTML", async () => {
   });
 
   console.log(data);
+});
+
+test("parsePeriodicPaymentResponse", async () => {
+  const client = new NewebpayClient({
+    merchantId,
+    hashKey,
+    hashIV,
+    env: "sandbox",
+  });
+
+  const rawResponse = fs.readFileSync(
+    "./test/periodicPaymentResponse.txt",
+    "utf8"
+  );
+  const response = client.parsePeriodicPaymentResponse(rawResponse);
+
+  console.log(response);
 });

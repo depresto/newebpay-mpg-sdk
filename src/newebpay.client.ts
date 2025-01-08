@@ -9,6 +9,7 @@ import {
   CreditCardPaymentParams,
   GetPaymentFormHTMLParams,
   ModifyMerchantParams,
+  PeriodicPaymentResponse,
   QueryTradeInfoParams,
   RefundCreditCardParams,
   RefundEWalletParams,
@@ -465,6 +466,11 @@ export class NewebpayClient {
       headers,
     });
   };
+
+  public parsePeriodicPaymentResponse(rawResponse: string) {
+    const decrypted = this.decryptAESString(rawResponse);
+    return JSON.parse(decrypted) as PeriodicPaymentResponse;
+  }
 
   private getTimeStamp() {
     return Math.floor(new Date().getTime() / 1000).toString();
