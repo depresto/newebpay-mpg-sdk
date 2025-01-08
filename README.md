@@ -81,33 +81,6 @@ client.getPaymentFormHTML({
 });
 ```
 
-### Create Periodic Payment Form (定期定額 建立委託 [NPA-B05])
-
-詳情請見官方文件：(信用卡定期定額技術串接手冊)：[文件網址](https://www.newebpay.com/website/Page/download_file?name=%E4%BF%A1%E7%94%A8%E5%8D%A1%E5%AE%9A%E6%9C%9F%E5%AE%9A%E9%A1%8D%E4%B8%B2%E6%8E%A5%E6%8A%80%E8%A1%93%E6%89%8B%E5%86%8A_NDNP-1.0.4.pdf)
-
-```javascript
-client.createPeriodicPaymentHTML({
-  LangType: "zh-Tw", // 語系 非必填 'zh-Tw' | 'en' | 'jp'
-  MerOrderNo: "2020072812000000", // 訂單編號 必填
-  ProdDesc: "約定信用卡", // 委託商品或服務名稱 必填 僅限制使用中文、英文、數字、空格及底線，若內容必須含有特殊符號請自行轉為全形
-  PeriodAmt: 10, // 委託金額 必填
-  PeriodType: "M", // 週期類別 必填 D=固定天期 W=每週 M=每月 Y=每年
-  PeriodPoint: "01", // 交易週期授權時間 必填 PeriodType = D，此欄位值限為數字 2~999 / PeriodType =W，此欄位值限為數字 1~7，代表每週一至週日 / 當 PeriodType = M，此欄位值限為數字 01~31，代表每月 1 號~31 號 / 當 PeriodType =Y，此欄位值格式為 MMDD
-  PeriodStartType: 1, // 交易模式 必填 １=立即執行十元授權 / ２=立即執行委託金額授權 / ３=不檢查信用卡資訊，不授權
-  PeriodTimes: 99, // 授權期數 必填 授權期數大於信用卡到期日，則系統自動以信用卡到期日為最終期數
-  PeriodFirstdate: "2020/07/28", // 首期授權日 格式為『YYYY/mm/dd』
-  PeriodMemo: "約定信用卡", // 備註說明 
-  PayerEmail: "test@example.com", // 付款人電子信箱
-  EmailModify: 0, // 付款人電子信箱是否開放修改 非必填 1 | 0 預設值為 1
-  PaymentInfo: "N", // 是否開啟付款人資訊 Y | N 預設值為 Y
-  OrderInfo: "N", // 是否開啟收件人資訊  Y | N 預設值為 Y
-  ReturnURL: returnUrl, // 返回商店網址
-  NotifyURL: notifyUrl, // 每期授權結果通知網址 
-  BackURL: clientBackUrl, // 返回商店網址 
-  UNIONPAY: 0, // 信用卡銀聯卡啟用 銀聯卡僅支援幕後非 3D 交易
-});
-```
-
 ### Parse returning TradeInfo data (解密 TradeInfo/AES256)
 
 詳情請見官方文件：[文件網址](https://www.newebpay.com/website/Page/download_file?name=NewebPay_Online%20Payment-Foreground%20Scenario%20API%20Specification_NDNF-1.0.1.pdf)
@@ -193,6 +166,42 @@ const {
 // ezPay waller = EZPAY
 // Alipay = EZPALIPAY
 // WeChat = EZPWECHAT
+```
+
+### Create Periodic Payment Form (定期定額 建立委託 [NPA-B05])
+
+詳情請見官方文件：(信用卡定期定額技術串接手冊)：[文件網址](https://www.newebpay.com/website/Page/download_file?name=%E4%BF%A1%E7%94%A8%E5%8D%A1%E5%AE%9A%E6%9C%9F%E5%AE%9A%E9%A1%8D%E4%B8%B2%E6%8E%A5%E6%8A%80%E8%A1%93%E6%89%8B%E5%86%8A_NDNP-1.0.4.pdf)
+
+```javascript
+client.createPeriodicPaymentHTML({
+  LangType: "zh-Tw", // 語系 非必填 'zh-Tw' | 'en' | 'jp'
+  MerOrderNo: "2020072812000000", // 訂單編號 必填
+  ProdDesc: "約定信用卡", // 委託商品或服務名稱 必填 僅限制使用中文、英文、數字、空格及底線，若內容必須含有特殊符號請自行轉為全形
+  PeriodAmt: 10, // 委託金額 必填
+  PeriodType: "M", // 週期類別 必填 D=固定天期 W=每週 M=每月 Y=每年
+  PeriodPoint: "01", // 交易週期授權時間 必填 PeriodType = D，此欄位值限為數字 2~999 / PeriodType =W，此欄位值限為數字 1~7，代表每週一至週日 / 當 PeriodType = M，此欄位值限為數字 01~31，代表每月 1 號~31 號 / 當 PeriodType =Y，此欄位值格式為 MMDD
+  PeriodStartType: 1, // 交易模式 必填 １=立即執行十元授權 / ２=立即執行委託金額授權 / ３=不檢查信用卡資訊，不授權
+  PeriodTimes: 99, // 授權期數 必填 授權期數大於信用卡到期日，則系統自動以信用卡到期日為最終期數
+  PeriodFirstdate: "2020/07/28", // 首期授權日 格式為『YYYY/mm/dd』
+  PeriodMemo: "約定信用卡", // 備註說明 
+  PayerEmail: "test@example.com", // 付款人電子信箱
+  EmailModify: 0, // 付款人電子信箱是否開放修改 非必填 1 | 0 預設值為 1
+  PaymentInfo: "N", // 是否開啟付款人資訊 Y | N 預設值為 Y
+  OrderInfo: "N", // 是否開啟收件人資訊  Y | N 預設值為 Y
+  ReturnURL: returnUrl, // 返回商店網址
+  NotifyURL: notifyUrl, // 每期授權結果通知網址 
+  BackURL: clientBackUrl, // 返回商店網址 
+  UNIONPAY: 0, // 信用卡銀聯卡啟用 銀聯卡僅支援幕後非 3D 交易
+});
+```
+
+### Parse returning Periodic Payment Result
+
+詳情請見官方文件：(信用卡定期定額技術串接手冊) 4.3.2 回應參數-建立完成
+
+```javascript
+const rawResponse = ""; // 回應參數 請自行把 Period=xxxx 的參數取出
+const { Status, Message, Result } = client.parsePeriodicPaymentResponse(rawResponse);
 ```
 
 ### Create a new merchant (Partner API)

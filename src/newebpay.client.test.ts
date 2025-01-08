@@ -80,6 +80,27 @@ test("createPeriodicPaymentHTML", async () => {
   console.log(data);
 });
 
+test("parsePeriodicPaymentCreationResponse", async () => {
+  const client = new NewebpayClient({
+    merchantId,
+    hashKey,
+    hashIV,
+    env: "sandbox",
+  });
+
+  // TODO: create this file when you get the response from the API
+  const rawResponse = fs.readFileSync(
+    "./test/periodicPaymentCreationResponse.txt",
+    "utf8"
+  );
+  const response = client.parsePeriodicPaymentCreationResponse(rawResponse);
+
+  expect(response.Status).toBeDefined();
+  expect(response.Message).toBeDefined();
+  expect(response.Result).toBeDefined();
+  expect(response.Result.DateArray).toBeDefined();
+});
+
 test("parsePeriodicPaymentResponse", async () => {
   const client = new NewebpayClient({
     merchantId,
@@ -98,5 +119,5 @@ test("parsePeriodicPaymentResponse", async () => {
   expect(response.Status).toBeDefined();
   expect(response.Message).toBeDefined();
   expect(response.Result).toBeDefined();
-  expect(response.Result.DateArray).toBeDefined();
+  expect(response.Result.AuthBank).toBeDefined();
 });

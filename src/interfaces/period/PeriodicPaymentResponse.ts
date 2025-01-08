@@ -1,20 +1,18 @@
 export type PeriodicPaymentResponseResult = {
+  RespondCode: "00" | string;
   MerchantID: string;
   MerchantOrderNo: string;
-  PeriodType: "D" | "W" | "M" | "Y";
-  AuthTimes: number;
-  DateArray: string;
-  PeriodAmt: number;
-  PeriodNo: string;
-
-  AuthTime?: string;
-  TradeNo?: string;
-  CardNo?: string;
-  AuthCode?: string;
-  RespondCode?: "00" | string;
-  EscrowBank?: string;
-  AuthBank?: string;
-  PaymentMethod?: "CREDIT" | "UNIONPAY";
+  OrderNo: string
+  TradeNo: string;
+  AuthDate: string
+  TotalTimes: string
+  AlreadyTimes: string
+  AuthAmt: number
+  AuthCode: string
+  EscrowBank: string
+  AuthBank: string
+  NextAuthDate: string
+  PeriodNo: string
 };
 
 export type PeriodicPaymentResponse = {

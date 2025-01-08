@@ -14,6 +14,7 @@ import { TradeInfoResult } from "./interfaces/TradeInfoResult";
 import { CreatePeriodicPaymentHTMLParams } from "./interfaces/period/CreatePeriodicPaymentHTMLParams";
 import { NewebpayClient } from "./newebpay.client";
 import { CreatePeriodicPaymentResult } from "./interfaces/period/CreatePeriodicPaymentResult";
+import { PeriodicPaymentCreationResponse } from "./interfaces/period/PeriodicPaymentCreationResponse";
 import { PeriodicPaymentResponse } from "./interfaces/period/PeriodicPaymentResponse";
 
 export {
@@ -33,6 +34,7 @@ export {
   ChargeMerchantParams,
   ChargeMerchantResult,
   ModifyMerchantParams,
+  PeriodicPaymentCreationResponse,
   PeriodicPaymentResponse,
 };
 
