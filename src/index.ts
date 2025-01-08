@@ -11,8 +11,9 @@ import { QueryTradeInfoParams } from "./interfaces/QueryTradeInfoParams";
 import { RefundEWalletParams } from "./interfaces/RefundEWalletParams";
 import { TradeInfo } from "./interfaces/TradeInfo";
 import { TradeInfoResult } from "./interfaces/TradeInfoResult";
-import { CreatePeriodicPaymentParams } from "./interfaces/period/CreatePeriodicPaymentParams";
+import { CreatePeriodicPaymentHTMLParams } from "./interfaces/period/CreatePeriodicPaymentHTMLParams";
 import { NewebpayClient } from "./newebpay.client";
+import { CreatePeriodicPaymentResult } from "./interfaces/period/CreatePeriodicPaymentResult";
 
 export {
   NewebpayClient,
@@ -25,7 +26,8 @@ export {
   RefundEWalletParams,
   CreditCardAgreementTokenParams,
   CreditCardPaymentParams,
-  CreatePeriodicPaymentParams,
+  CreatePeriodicPaymentHTMLParams,
+  CreatePeriodicPaymentResult,
   AddMerchantParams,
   ChargeMerchantParams,
   ChargeMerchantResult,

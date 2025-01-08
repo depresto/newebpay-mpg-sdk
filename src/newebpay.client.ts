@@ -5,7 +5,7 @@ import {
   AddMerchantParams,
   CancelCreditCardParams,
   ChargeMerchantResult,
-  CreatePeriodicPaymentParams,
+  CreatePeriodicPaymentHTMLParams,
   CreditCardPaymentParams,
   GetPaymentFormHTMLParams,
   ModifyMerchantParams,
@@ -76,10 +76,11 @@ export class NewebpayClient {
    */
   public getPaymentFormHTML(params: GetPaymentFormHTMLParams): string {
     const Version = params.Version ?? "2.0";
+    const TimeStamp = this.getTimeStamp();
     const tradeInfo = this.buildTradeInfo({
       MerchantID: this.merchantId,
       RespondType: "JSON",
-      TimeStamp: Math.floor(new Date().getTime() / 1000),
+      TimeStamp,
       Version,
       LangType: "zh-tw",
       LoginType: 0,
@@ -88,10 +89,12 @@ export class NewebpayClient {
     const tradeSha = this.buildTradeSha(tradeInfo);
 
     const html: string[] = [];
-    const paymentUrl = `${this.apiEndpoint}/MPG/mpg_gateway`;
+    const paymentEndpoint = `${this.apiEndpoint}/MPG/mpg_gateway`;
     const formId = `_auto_pay_Form_${new Date().getTime()}`;
 
-    html.push(`<form id="${formId}" method="post" action="${paymentUrl}">`);
+    html.push(
+      `<form id="${formId}" method="post" action="${paymentEndpoint}">`
+    );
     html.push(
       `<input type="hidden" name="MerchantID" value="${this.merchantId}" />`
     );
@@ -110,7 +113,7 @@ export class NewebpayClient {
     const { Amt, MerchantOrderNo } = params;
     const MerchantID = this.merchantId;
     const Version = "1.3";
-    const TimeStamp = Math.floor(new Date().getTime() / 1000).toString();
+    const TimeStamp = this.getTimeStamp();
     const CheckCode = this.buildCheckCode({ Amt, MerchantID, MerchantOrderNo });
 
     const formData = new FormData();
@@ -137,15 +140,57 @@ export class NewebpayClient {
     };
   }
 
-  public async createPeriodicPayment(params: CreatePeriodicPaymentParams) {
-    
+  public createPeriodicPaymentHTML(params: CreatePeriodicPaymentHTMLParams) {
+    if (params.PeriodTimes > 99) {
+      throw new Error("PeriodTimes must be less than 100");
+    }
+
+    const periodFirstdateRegex = /^\d{4}\/\d{2}\/\d{2}$/;
+    if (
+      params.PeriodFirstdate &&
+      !periodFirstdateRegex.test(params.PeriodFirstdate)
+    ) {
+      throw new Error("PeriodTimes format is invalid");
+    }
+
+    const Version = "1.5";
+    const TimeStamp = this.getTimeStamp();
+
+    const tradeInfo = this.buildTradeInfo({
+      RespondType: "JSON",
+      TimeStamp,
+      Version,
+      ...params,
+    });
+
+    const html: string[] = [];
+    const paymentEndpoint = `${this.apiEndpoint}/MPG/period`;
+    const formId = `_auto_pay_Form_${new Date().getTime()}`;
+
+    html.push(
+      `<form id="${formId}" method="post" action="${paymentEndpoint}">`
+    );
+    html.push(
+      `<input type="hidden" name="MerchantID_" value="${this.merchantId}" />`
+    );
+    html.push(`<input type="hidden" name="PostData_" value="${tradeInfo}" />`);
+    html.push("</form>");
+
+    html.push("<script>");
+    html.push(`document.getElementById("${formId}").submit();`);
+    html.push("</script>");
+
+    return html.join("\n");
   }
 
   public async refundCreditCard(params: RefundCreditCardParams) {
+    const Version = "1.1";
+    const TimeStamp = this.getTimeStamp();
+
     const PostData_ = this.buildTradeInfo({
       RespondType: "JSON",
-      TimeStamp: Math.floor(new Date().getTime() / 1000),
-      Version: "1.1",
+      TimeStamp,
+      Version,
       ...params,
     });
 
@@ -169,10 +214,13 @@ export class NewebpayClient {
   }
 
   public async cancelCreditCard(params: CancelCreditCardParams) {
+    const Version = "1.0";
+    const TimeStamp = this.getTimeStamp();
+
     const PostData_ = this.buildTradeInfo({
       RespondType: "JSON",
-      TimeStamp: Math.floor(new Date().getTime() / 1000),
-      Version: "1.0",
+      TimeStamp,
+      Version,
       ...params,
     });
 
@@ -196,8 +244,11 @@ export class NewebpayClient {
   }
 
   public async refundEWallet(params: RefundEWalletParams) {
+    const Version = "1.0";
+    const TimeStamp = this.getTimeStamp();
+
     const data_ = JSON.stringify({
-      TimeStamp: Math.floor(new Date().getTime() / 1000),
+      TimeStamp,
       ...params,
     });
     const EncryptData_ = this.encryptAESString(data_);
@@ -205,7 +256,7 @@ export class NewebpayClient {
 
     const formData = new FormData();
     formData.append("UID_", this.merchantId);
-    formData.append("Version_", "1.0");
+    formData.append("Version_", Version);
     formData.append("EncryptData_", EncryptData_);
     formData.append("RespondType_", "JSON");
     formData.append("HashData_", HashData_);
@@ -217,7 +268,6 @@ export class NewebpayClient {
     const Status = data.Status as string;
     const Message = data.Message as string;
     const UID = data.UID as string;
-    const Version = data.Version as string;
     const EncryptData = data.EncryptData as string;
     const Result = this.parseTradeInfo(EncryptData) as { [key: string]: any };
 
@@ -238,13 +288,16 @@ export class NewebpayClient {
       throw new Error("Please provide PartnerID");
     }
 
+    const Version = params.Version ?? "1.8";
+    const TimeStamp = this.getTimeStamp();
+
     const formData = new FormData();
     formData.append("PartnerID_", this.partnerId);
     formData.append(
       "PostData_",
       this.buildTradeInfo({
-        TimeStamp: Math.floor(new Date().getTime() / 1000),
-        Version: params.Version ?? "1.8",
+        TimeStamp,
+        Version,
         ...params,
       })
     );
@@ -272,13 +325,16 @@ export class NewebpayClient {
       throw new Error("Please provide PartnerID");
     }
 
+    const Version = params.Version ?? "1.7";
+    const TimeStamp = this.getTimeStamp();
+
     const formData = new FormData();
     formData.append("PartnerID_", this.partnerId);
     formData.append(
       "PostData_",
       this.buildTradeInfo({
-        TimeStamp: Math.floor(new Date().getTime() / 1000),
-        Version: params.Version ?? "1.7",
+        TimeStamp,
+        Version,
         ...params,
       })
     );
@@ -306,13 +362,16 @@ export class NewebpayClient {
       throw new Error("Please provide PartnerID");
     }
 
+    const Version = params.Version ?? "1.1";
+    const TimeStamp = this.getTimeStamp();
+
     const formData = new FormData();
     formData.append("PartnerID_", this.partnerId);
     formData.append(
       "PostData_",
       this.buildTradeInfo({
-        TimeStamp: Math.floor(new Date().getTime() / 1000),
-        Version: params.Version ?? "1.1",
+        TimeStamp,
+        Version,
         ...params,
       })
     );
@@ -326,14 +385,17 @@ export class NewebpayClient {
   }
 
   public requestCreditCardPayment = async (params: CreditCardPaymentParams) => {
+    const Version = params.TokenSwitch ? "2.0" : "1.1";
+    const TimeStamp = this.getTimeStamp();
+
     const formData = new FormData();
     formData.append("MerchantID_", this.merchantId);
     formData.append(
       "PostData_",
       this.buildTradeInfo({
         MerchantID: this.merchantId,
-        TimeStamp: Math.floor(new Date().getTime() / 1000),
-        Version: params.TokenSwitch ? "2.0" : "1.1",
+        TimeStamp,
+        Version,
         ...params,
       })
     );
@@ -403,6 +465,10 @@ export class NewebpayClient {
       headers,
     });
   };
+
+  private getTimeStamp() {
+    return Math.floor(new Date().getTime() / 1000).toString();
+  }
 }
 
 export default NewebpayClient;

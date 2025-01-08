@@ -1,10 +1,10 @@
-export type CreatePeriodicPaymentParams = {
+export type CreatePeriodicPaymentHTMLParams = {
   LangType?: 'zh-Tw' |'en'
   MerOrderNo: string
   ProdDesc: string
   PeriodAmt: number
   PeriodType: 'D' | 'W' | 'M' | 'Y'
-  PeriodPoint: number
+  PeriodPoint: string
   PeriodStartType: 1 | 2 | 3
   PeriodTimes: number
   PeriodFirstdate?: string
