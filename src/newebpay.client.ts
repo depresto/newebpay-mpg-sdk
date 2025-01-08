@@ -3,13 +3,17 @@ import axios, { AxiosRequestHeaders } from "axios";
 import FormData from "form-data";
 import {
   AddMerchantParams,
+  AlterPeriodicPaymentAmountParams,
+  AlterPeriodicPaymentAmountResponse,
+  AlterPeriodicPaymentStatusParams,
+  AlterPeriodicPaymentStatusResponse,
   CancelCreditCardParams,
   ChargeMerchantResult,
   CreatePeriodicPaymentHTMLParams,
+  CreatePeriodicPaymentResponse,
   CreditCardPaymentParams,
   GetPaymentFormHTMLParams,
   ModifyMerchantParams,
-  PeriodicPaymentCreationResponse,
   PeriodicPaymentResponse,
   QueryTradeInfoParams,
   RefundCreditCardParams,
@@ -183,6 +187,78 @@ export class NewebpayClient {
     html.push("</script>");
 
     return html.join("\n");
+  }
+
+  public async alterPeriodicPaymentStatus(
+    params: AlterPeriodicPaymentStatusParams
+  ) {
+    const Version = "1.0";
+    const TimeStamp = this.getTimeStamp();
+
+    const PostData_ = this.buildTradeInfo({
+      RespondType: "JSON",
+      TimeStamp,
+      Version,
+      ...params,
+    });
+
+    const formData = new FormData();
+    formData.append("MerchantID_", this.merchantId);
+    formData.append("PostData_", PostData_);
+
+    const { data } = await this.sendApiRequest({
+      apiPath: "/MPG/period/AlterStatus",
+      data: formData,
+    });
+
+    if (typeof data === "string") {
+      const response = new URLSearchParams(data);
+      return {
+        Status: response.get("Status"),
+        Message: response.get("Message"),
+        Result: null,
+      } as AlterPeriodicPaymentStatusResponse;
+    } else {
+      const period = data.period;
+      const decrypted = this.decryptAESString(period);
+      return JSON.parse(decrypted) as AlterPeriodicPaymentStatusResponse;
+    }
+  }
+
+  public async alterPeriodicPaymentAmount(
+    params: AlterPeriodicPaymentAmountParams
+  ) {
+    const Version = "1.2";
+    const TimeStamp = this.getTimeStamp();
+
+    const PostData_ = this.buildTradeInfo({
+      RespondType: "JSON",
+      TimeStamp,
+      Version,
+      ...params,
+    });
+
+    const formData = new FormData();
+    formData.append("MerchantID_", this.merchantId);
+    formData.append("PostData_", PostData_);
+
+    const { data } = await this.sendApiRequest({
+      apiPath: "/MPG/period/AlterAmt",
+      data: formData,
+    });
+
+    if (typeof data === "string") {
+      const response = new URLSearchParams(data);
+      return {
+        Status: response.get("Status"),
+        Message: response.get("Message"),
+        Result: null,
+      } as AlterPeriodicPaymentAmountResponse;
+    } else {
+      const period = data.period;
+      const decrypted = this.decryptAESString(period);
+      return JSON.parse(decrypted) as AlterPeriodicPaymentAmountResponse;
+    }
   }
 
   public async refundCreditCard(params: RefundCreditCardParams) {
@@ -468,9 +544,9 @@ export class NewebpayClient {
     });
   };
 
-  public parsePeriodicPaymentCreationResponse(rawResponse: string) {
+  public parseCreatePeriodicPaymentResponse(rawResponse: string) {
     const decrypted = this.decryptAESString(rawResponse);
-    return JSON.parse(decrypted) as PeriodicPaymentCreationResponse;
+    return JSON.parse(decrypted) as CreatePeriodicPaymentResponse;
   }
 
   public parsePeriodicPaymentResponse(rawResponse: string) {

@@ -13,9 +13,12 @@ import { TradeInfo } from "./interfaces/TradeInfo";
 import { TradeInfoResult } from "./interfaces/TradeInfoResult";
 import { CreatePeriodicPaymentHTMLParams } from "./interfaces/period/CreatePeriodicPaymentHTMLParams";
 import { NewebpayClient } from "./newebpay.client";
-import { CreatePeriodicPaymentResult } from "./interfaces/period/CreatePeriodicPaymentResult";
-import { PeriodicPaymentCreationResponse } from "./interfaces/period/PeriodicPaymentCreationResponse";
+import { CreatePeriodicPaymentResponse, CreatePeriodicPaymentResult } from "./interfaces/period/CreatePeriodicPaymentResult";
 import { PeriodicPaymentResponse } from "./interfaces/period/PeriodicPaymentResponse";
+import { AlterPeriodicPaymentStatusParams } from "./interfaces/period/AlterPeriodicPaymentStatusParams";
+import { AlterPeriodicPaymentStatusResponse } from "./interfaces/period/AlterPeriodicPaymentStatusResponse";
+import { AlterPeriodicPaymentAmountResponse } from "./interfaces/period/AlterPeriodicPaymentAmountResponse";
+import { AlterPeriodicPaymentAmountParams } from "./interfaces/period/AlterPeriodicPaymentAmountParams";
 
 export {
   NewebpayClient,
@@ -29,13 +32,18 @@ export {
   CreditCardAgreementTokenParams,
   CreditCardPaymentParams,
   CreatePeriodicPaymentHTMLParams,
+  CreatePeriodicPaymentResponse,
   CreatePeriodicPaymentResult,
   AddMerchantParams,
   ChargeMerchantParams,
   ChargeMerchantResult,
   ModifyMerchantParams,
-  PeriodicPaymentCreationResponse,
   PeriodicPaymentResponse,
+  AlterPeriodicPaymentStatusParams,
+  AlterPeriodicPaymentStatusResponse,
+  AlterPeriodicPaymentAmountParams,
+  AlterPeriodicPaymentAmountResponse,
+  
 };
 
 export default NewebpayClient;

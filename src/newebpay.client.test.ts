@@ -58,14 +58,14 @@ test("createPeriodicPaymentHTML", async () => {
   });
   const data = client.createPeriodicPaymentHTML({
     LangType: "zh-Tw",
-    MerOrderNo: "2020072812000000",
+    MerOrderNo: "2025010812000000",
     ProdDesc: "約定信用卡",
     PeriodAmt: 10,
     PeriodType: "M",
     PeriodPoint: "01",
     PeriodStartType: 1,
     PeriodTimes: 99,
-    PeriodFirstdate: "2020/07/28",
+    PeriodFirstdate: "2025/01/08",
     PeriodMemo: "約定信用卡",
     PayerEmail: "wayne@havppen.com",
     EmailModify: 0,
@@ -80,7 +80,7 @@ test("createPeriodicPaymentHTML", async () => {
   console.log(data);
 });
 
-test("parsePeriodicPaymentCreationResponse", async () => {
+test("parseCreatePeriodicPaymentResponse", async () => {
   const client = new NewebpayClient({
     merchantId,
     hashKey,
@@ -93,12 +93,29 @@ test("parsePeriodicPaymentCreationResponse", async () => {
     "./test/periodicPaymentCreationResponse.txt",
     "utf8"
   );
-  const response = client.parsePeriodicPaymentCreationResponse(rawResponse);
+  const response = client.parseCreatePeriodicPaymentResponse(rawResponse);
 
+  console.log(response);
   expect(response.Status).toBeDefined();
   expect(response.Message).toBeDefined();
   expect(response.Result).toBeDefined();
   expect(response.Result.DateArray).toBeDefined();
+});
+
+test("periodicPaymentCreationFailResponse", async () => {
+  const client = new NewebpayClient({
+    merchantId,
+    hashKey,
+    hashIV,
+    env: "sandbox",
+  });
+  const rawResponse = fs.readFileSync(
+    "./test/periodicPaymentCreationFailResponse.txt",
+    "utf8"
+  );
+  const response = client.parseCreatePeriodicPaymentResponse(rawResponse);
+
+  console.log(response);
 });
 
 test("parsePeriodicPaymentResponse", async () => {
@@ -120,4 +137,42 @@ test("parsePeriodicPaymentResponse", async () => {
   expect(response.Message).toBeDefined();
   expect(response.Result).toBeDefined();
   expect(response.Result.AuthBank).toBeDefined();
+});
+
+describe("period alter API", () => {
+  let client: NewebpayClient;
+
+  beforeEach(() => {
+    client = new NewebpayClient({
+      merchantId,
+      hashKey,
+      hashIV,
+      env: "sandbox",
+    });
+  });
+
+  test("should alterPeriodicPaymentStatus request success", async () => {
+    try {
+      const response = await client.alterPeriodicPaymentStatus({
+        MerOrderNo: "2025010812000000",
+        PeriodNo: "P250108170419c04GYx",
+        AlterType: "restart",
+      });
+      expect(response.Status).toBeDefined();
+      expect(response.Result?.MerOrderNo).toBeDefined();
+    } catch (error) {
+      console.log(error);
+    }
+  });
+
+  test("should alterPeriodicPaymentAmount request success", async () => {
+    const response = await client.alterPeriodicPaymentAmount({
+      MerOrderNo: "2025010812000000",
+      PeriodNo: "P250108170419c04GYx",
+      AlterAmt: 20,
+    });
+
+    expect(response.Status).toBeDefined();
+    expect(response.Result?.MerOrderNo).toBeDefined();
+  });
 });

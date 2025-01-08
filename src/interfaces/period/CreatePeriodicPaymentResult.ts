@@ -1,3 +1,9 @@
+export type CreatePeriodicPaymentResponse = {
+  Status: "SUCCESS" | string;
+  Message: string;
+  Result: CreatePeriodicPaymentResult;
+}
+
 export type CreatePeriodicPaymentResult =
   | DefaultPeriodicPaymentResult
   | (DefaultPeriodicPaymentResult & AuthorizedPeriodicPaymentResult);
@@ -5,7 +11,7 @@ export type CreatePeriodicPaymentResult =
 type DefaultPeriodicPaymentResult = {
   MerchantID: string;
   MerchantOrderNo: string;
-  PeriodType: string;
+  PeriodType: "D" | "W" | "M" | "Y";
   AuthTimes: number;
   DateArray: string;
   PeriodAmt: number;
@@ -17,8 +23,8 @@ type AuthorizedPeriodicPaymentResult = {
   TradeNo: string;
   CardNo: string;
   AuthCode: string;
-  RespondCode: string;
+  RespondCode: "00" | string;
   EscrowBank: string;
   AuthBank: string;
-  PaymentMethod: string;
+  PaymentMethod: "CREDIT" | "UNIONPAY";
 };
