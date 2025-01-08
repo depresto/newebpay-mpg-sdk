@@ -88,11 +88,15 @@ test("parsePeriodicPaymentResponse", async () => {
     env: "sandbox",
   });
 
+  // TODO: create this file when you get the response from the API
   const rawResponse = fs.readFileSync(
     "./test/periodicPaymentResponse.txt",
     "utf8"
   );
   const response = client.parsePeriodicPaymentResponse(rawResponse);
 
-  console.log(response);
+  expect(response.Status).toBeDefined();
+  expect(response.Message).toBeDefined();
+  expect(response.Result).toBeDefined();
+  expect(response.Result.DateArray).toBeDefined();
 });
