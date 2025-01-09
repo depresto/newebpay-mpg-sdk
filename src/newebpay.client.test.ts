@@ -22,15 +22,16 @@ describe("MPG API", () => {
 
   test("should getPaymentFormHTML for credit card agreement", async () => {
     const data = client.getPaymentFormHTML({
-      NotifyURL: "https://webhook.site/dcf03f1f-e2de-42d8-b39f-c5387a325508",
-      ReturnURL: "https://webhook.site/dcf03f1f-e2de-42d8-b39f-c5387a325508",
-      MerchantOrderNo: Date.now().toString(),
+      NotifyURL: notifyUrl,
+      ReturnURL: returnUrl,
+      MerchantOrderNo: "2025010911000000",
       Amt: 10,
-      ItemDesc: "約定信用卡",
-      OrderComment: "約定信用卡",
+      ItemDesc: "測試",
+      OrderComment: "測試",
       Email: "wayne@havppen.com",
-      TokenTerm: "UserID",
-      CREDITAGREEMENT: 1,
+      CREDIT: 1,
+      CVS: 1,
+      WEBATM: 1,
     });
 
     console.log(data);
