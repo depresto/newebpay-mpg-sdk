@@ -27,6 +27,7 @@ export class NewebpayClient {
   hashKey: string;
   hashIV: string;
   apiEndpoint: string;
+  env: "sandbox" | "production";
   proxySecret?: string;
 
   constructor(params: {
@@ -40,6 +41,7 @@ export class NewebpayClient {
   }) {
     const dryRun = params.env === "sandbox";
 
+    this.env = params.env;
     this.partnerId = params.partnerId ?? null;
     this.merchantId = params.merchantId;
     this.hashKey = params.hashKey;
@@ -534,6 +536,7 @@ export class NewebpayClient {
     if (this.proxySecret) {
       headers["proxy-secret"] = this.proxySecret;
       headers["proxy-type"] = "newebpay";
+      headers["proxy-env"] = this.env;
     }
 
     return await axios({

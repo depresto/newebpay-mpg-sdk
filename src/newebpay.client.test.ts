@@ -24,7 +24,7 @@ describe("MPG API", () => {
     const data = client.getPaymentFormHTML({
       NotifyURL: notifyUrl,
       ReturnURL: returnUrl,
-      MerchantOrderNo: "2025010911000000",
+      MerchantOrderNo: "2025011611000000",
       Amt: 10,
       ItemDesc: "測試",
       OrderComment: "測試",
@@ -73,14 +73,13 @@ describe("periodic payment API", () => {
     });
     const data = client.createPeriodicPaymentHTML({
       LangType: "zh-Tw",
-      MerOrderNo: "2025010812000000",
+      MerOrderNo: "2025011612000000",
       ProdDesc: "約定信用卡",
       PeriodAmt: 10,
       PeriodType: "M",
       PeriodPoint: "01",
       PeriodStartType: 1,
       PeriodTimes: 99,
-      PeriodFirstdate: "2025/01/08",
       PeriodMemo: "約定信用卡",
       PayerEmail: "wayne@havppen.com",
       EmailModify: 0,
@@ -152,10 +151,11 @@ describe("periodic payment alter API", () => {
   test("should alterPeriodicPaymentStatus request success", async () => {
     try {
       const response = await client.alterPeriodicPaymentStatus({
-        MerOrderNo: "2025010812000000",
-        PeriodNo: "P250108170419c04GYx",
-        AlterType: "restart",
+        MerOrderNo: "17375268628812470",
+        PeriodNo: "P250122142116GWoCQJ",
+        AlterType: "terminate",
       });
+      console.log(response)
       expect(response.Status).toBeDefined();
       expect(response.Result?.MerOrderNo).toBeDefined();
     } catch (error) {
