@@ -349,7 +349,9 @@ export class NewebpayClient {
     const Message = data.Message as string;
     const UID = data.UID as string;
     const EncryptData = data.EncryptData as string;
-    const Result = this.parseTradeInfo(EncryptData) as { [key: string]: any };
+    const Result = EncryptData
+      ? (this.parseTradeInfo(EncryptData) as { [key: string]: any })
+      : {};
 
     return {
       UID,
