@@ -18,9 +18,19 @@ describe("MPG API", () => {
 
   test("should refund eWallet", async () => {
     const data = await client.refundEWallet({
-      MerchantOrderNo: "1739512946019534",
-      Amount: 1500,
+      MerchantOrderNo: "17395115177210224",
+      Amount: 3000,
       PaymentType: "LINEPAY",
+    });
+
+    console.log(data);
+    expect(data).toBeDefined();
+  });
+
+  test("should query trade info", async () => {
+    const data = await client.queryTradeInfo({
+      MerchantOrderNo: "17395115177210224",
+      Amt: 3000,
     });
 
     console.log(data);

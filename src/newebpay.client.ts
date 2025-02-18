@@ -122,13 +122,13 @@ export class NewebpayClient {
     const MerchantID = this.merchantId;
     const Version = "1.3";
     const TimeStamp = this.getTimeStamp();
-    const CheckCode = this.buildCheckCode({ Amt, MerchantID, MerchantOrderNo });
+    const CheckValue = this.buildCheckValue({ Amt, MerchantID, MerchantOrderNo });
 
     const formData = new FormData();
     formData.append("MerchantID", MerchantID);
     formData.append("Version", Version);
     formData.append("RespondType", "JSON");
-    formData.append("CheckValue", CheckCode);
+    formData.append("CheckValue", CheckValue);
     formData.append("TimeStamp", TimeStamp);
     formData.append("MerchantOrderNo", MerchantOrderNo);
     formData.append("Amt", Amt);
@@ -524,6 +524,24 @@ export class NewebpayClient {
 
     const paramsStr = new URLSearchParams(data).toString();
     const checkStr = `HashIV=${this.hashIV}&${paramsStr}&HashKey=${this.hashKey}`;
+
+    return crypto
+      .createHash("sha256")
+      .update(checkStr)
+      .digest("hex")
+      .toUpperCase();
+  }
+
+  public buildCheckValue(params: { [key: string]: any }) {
+    const data = Object.keys(params)
+      .sort()
+      .reduce((obj, key) => {
+        obj[key] = params[key];
+        return obj;
+      }, {} as { [key: string]: any });
+
+    const paramsStr = new URLSearchParams(data).toString();
+    const checkStr = `IV=${this.hashIV}&${paramsStr}&Key=${this.hashKey}`;
 
     return crypto
       .createHash("sha256")
