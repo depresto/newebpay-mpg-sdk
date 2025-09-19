@@ -21,6 +21,12 @@ import {
   TradeInfo,
 } from ".";
 
+type NewebpayClientOptions = {
+  proxyEndpoint?: string;
+  proxySecret?: string;
+  userAgent?: string;
+};
+
 export class NewebpayClient {
   partnerId: string | null;
   merchantId: string;
@@ -29,6 +35,7 @@ export class NewebpayClient {
   apiEndpoint: string;
   env: "sandbox" | "production";
   proxySecret?: string;
+  userAgent?: string;
 
   constructor(params: {
     partnerId?: string;
@@ -36,10 +43,9 @@ export class NewebpayClient {
     hashKey: string;
     hashIV: string;
     env: "sandbox" | "production";
-    proxyEndpoint?: string;
-    proxySecret?: string;
+    options?: NewebpayClientOptions;
   }) {
-    const dryRun = params.env === "sandbox";
+    const isDryRun = params.env === "sandbox";
 
     this.env = params.env;
     this.partnerId = params.partnerId ?? null;
@@ -47,10 +53,11 @@ export class NewebpayClient {
     this.hashKey = params.hashKey;
     this.hashIV = params.hashIV;
 
-    this.proxySecret = params.proxySecret;
-    this.apiEndpoint = params.proxyEndpoint
-      ? params.proxyEndpoint
-      : dryRun === true
+    this.userAgent = params.options?.userAgent;
+    this.proxySecret = params.options?.proxySecret;
+    this.apiEndpoint = params.options?.proxyEndpoint
+      ? params.options.proxyEndpoint
+      : isDryRun
       ? "https://ccore.newebpay.com"
       : "https://core.newebpay.com";
   }
@@ -122,7 +129,11 @@ export class NewebpayClient {
     const MerchantID = this.merchantId;
     const Version = "1.3";
     const TimeStamp = this.getTimeStamp();
-    const CheckValue = this.buildCheckValue({ Amt, MerchantID, MerchantOrderNo });
+    const CheckValue = this.buildCheckValue({
+      Amt,
+      MerchantID,
+      MerchantOrderNo,
+    });
 
     const formData = new FormData();
     formData.append("MerchantID", MerchantID);
@@ -553,6 +564,9 @@ export class NewebpayClient {
   public sendApiRequest = async (params: { apiPath: string; data: any }) => {
     const headers: AxiosRequestHeaders = {};
     headers["Content-Type"] = "multipart/form-data";
+    if (this.userAgent) {
+      headers["User-Agent"] = this.userAgent;
+    }
     if (this.proxySecret) {
       headers["proxy-secret"] = this.proxySecret;
       headers["proxy-type"] = "newebpay";
