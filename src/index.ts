@@ -19,6 +19,12 @@ import { AlterPeriodicPaymentStatusParams } from "./interfaces/period/AlterPerio
 import { AlterPeriodicPaymentStatusResponse } from "./interfaces/period/AlterPeriodicPaymentStatusResponse";
 import { AlterPeriodicPaymentAmountResponse } from "./interfaces/period/AlterPeriodicPaymentAmountResponse";
 import { AlterPeriodicPaymentAmountParams } from "./interfaces/period/AlterPeriodicPaymentAmountParams";
+import { TokenPaymentParams } from "./interfaces/creditCard/TokenPaymentParams";
+import { TokenPaymentResponse } from "./interfaces/creditCard/TokenPaymentResponse";
+import { QueryTokenStatusParams } from "./interfaces/creditCard/QueryTokenStatusParams";
+import { QueryTokenStatusResponse } from "./interfaces/creditCard/QueryTokenStatusResponse";
+import { UnbindTokenParams } from "./interfaces/creditCard/UnbindTokenParams";
+import { UnbindTokenResponse } from "./interfaces/creditCard/UnbindTokenResponse";
 
 export {
   NewebpayClient,
@@ -43,7 +49,12 @@ export {
   AlterPeriodicPaymentStatusResponse,
   AlterPeriodicPaymentAmountParams,
   AlterPeriodicPaymentAmountResponse,
-  
+  TokenPaymentParams,
+  TokenPaymentResponse,
+  QueryTokenStatusParams,
+  QueryTokenStatusResponse,
+  UnbindTokenParams,
+  UnbindTokenResponse,
 };
 
 export default NewebpayClient;

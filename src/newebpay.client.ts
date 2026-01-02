@@ -16,9 +16,15 @@ import {
   ModifyMerchantParams,
   PeriodicPaymentResponse,
   QueryTradeInfoParams,
+  QueryTokenStatusParams,
+  QueryTokenStatusResponse,
   RefundCreditCardParams,
   RefundEWalletParams,
+  TokenPaymentParams,
+  TokenPaymentResponse,
   TradeInfo,
+  UnbindTokenParams,
+  UnbindTokenResponse,
 } from ".";
 
 type NewebpayClientOptions = {
@@ -502,6 +508,165 @@ export class NewebpayClient {
     return data as TradeInfo;
   };
 
+  public async authorizeTokenPayment(params: TokenPaymentParams) {
+    const Version = params.Version ?? "2.4";
+    const TimeStamp = this.getTimeStamp();
+
+    const PostData_ = this.buildTradeInfo({
+      MerchantID: this.merchantId,
+      RespondType: "JSON",
+      TimeStamp,
+      Version,
+      ...params,
+    });
+
+    const { data } = await this.sendApiRequest({
+      apiPath: "/API/CreditCard",
+      data: {
+        MerchantID_: this.merchantId,
+        PostData_: PostData_,
+        Pos_: "JSON",
+      },
+    });
+
+    const Status = data.Status as string;
+    const Message = data.Message as string;
+    let Result: TokenPaymentResponse["Result"] | null = null;
+
+    if (data.Result) {
+      if (typeof data.Result === "string") {
+        const decrypted = this.decryptAESString(data.Result);
+        Result = JSON.parse(decrypted) as TokenPaymentResponse["Result"];
+      } else {
+        Result = data.Result as TokenPaymentResponse["Result"];
+      }
+    }
+
+    return {
+      Status,
+      Message,
+      Result: Result!,
+    } as TokenPaymentResponse;
+  }
+
+  /**
+   * 查詢約定付款綁定狀態
+   * 
+   * @deprecated 此 API 目前還不能使用，請勿使用
+   * @param params 查詢參數
+   * @returns 查詢結果
+   * 
+   * @example
+   * ```typescript
+   * // 目前不支援，請勿使用
+   * const response = await client.queryTokenStatus({
+   *   TokenTerm: "2026-01-16",
+   *   TokenValue: "abc123def456"
+   * });
+   * ```
+   */
+  public async queryTokenStatus(params: QueryTokenStatusParams) {
+    const Version = "1.0";
+    const TimeStamp = this.getTimeStamp();
+
+    const EncryptData_ = this.buildTradeInfo({
+      MerchantID: this.merchantId,
+      TimeStamp,
+      TokenTerm: params.TokenTerm,
+      TokenValue: params.TokenValue,
+    });
+    const HashData_ = this.buildTradeSha(EncryptData_);
+
+    const { data } = await this.sendApiRequest({
+      apiPath: "/API/TokenCard/query",
+      data: {
+        UID_: this.merchantId,
+        EncryptData_: EncryptData_,
+        HashData_: HashData_,
+        Version_: Version,
+        RespondType_: "JSON",
+      },
+    });
+
+    const Status = data.Status as string;
+    const Message = data.Message as string;
+    let Result: QueryTokenStatusResponse["Result"] | null = null;
+
+    if (data.Result) {
+      if (typeof data.Result === "string") {
+        const decrypted = this.decryptAESString(data.Result);
+        Result = JSON.parse(decrypted) as QueryTokenStatusResponse["Result"];
+      } else {
+        Result = data.Result as QueryTokenStatusResponse["Result"];
+      }
+    }
+
+    return {
+      Status,
+      Message,
+      Result: Result!,
+    } as QueryTokenStatusResponse;
+  }
+
+  /**
+   * 解除約定付款綁定
+   * 
+   * @deprecated 此 API 目前還不能使用，請勿使用
+   * @param params 解除綁定參數
+   * @returns 解除綁定結果
+   * 
+   * @example
+   * ```typescript
+   * // 目前不支援，請勿使用
+   * const response = await client.unbindToken({
+   *   TokenTerm: "2026-01-16",
+   *   TokenValue: "abc123def456"
+   * });
+   * ```
+   */
+  public async unbindToken(params: UnbindTokenParams) {
+    const Version = "1.0";
+    const TimeStamp = this.getTimeStamp();
+
+    const PostData_ = this.buildTradeInfo({
+      MerchantID: this.merchantId,
+      TimeStamp,
+      TokenTerm: params.TokenTerm,
+      TokenValue: params.TokenValue,
+    });
+    const HashData_ = this.buildTradeSha(PostData_);
+
+    const { data } = await this.sendApiRequest({
+      apiPath: "/API/TokenCard/unbinding",
+      data: {
+        UID_: this.merchantId,
+        EncryptData_: PostData_,
+        HashData_: HashData_,
+        Version_: Version,
+        RespondType_: "JSON",
+      },
+    });
+
+    const Status = data.Status as string;
+    const Message = data.Message as string;
+    let Result: UnbindTokenResponse["Result"] | null = null;
+
+    if (data.Result) {
+      if (typeof data.Result === "string") {
+        const decrypted = this.decryptAESString(data.Result);
+        Result = JSON.parse(decrypted) as UnbindTokenResponse["Result"];
+      } else {
+        Result = data.Result as UnbindTokenResponse["Result"];
+      }
+    }
+
+    return {
+      Status,
+      Message,
+      Result: Result!,
+    } as UnbindTokenResponse;
+  }
+
   public buildTradeInfo(params: { [key: string]: any }) {
     const postData = new URLSearchParams(params).toString();
     const encrypted = this.encryptAESString(postData);
@@ -562,15 +727,16 @@ export class NewebpayClient {
   }
 
   public sendApiRequest = async (params: { apiPath: string; data: any }) => {
-    const headers: AxiosRequestHeaders = {};
-    headers["Content-Type"] = "multipart/form-data";
+    const headers: AxiosRequestHeaders = {
+      "Content-Type": "multipart/form-data",
+    };
     if (this.userAgent) {
       headers["User-Agent"] = this.userAgent;
     }
     if (this.proxySecret) {
-      headers["proxy-secret"] = this.proxySecret;
-      headers["proxy-type"] = "newebpay";
-      headers["proxy-env"] = this.env;
+      headers["x-proxy-secret"] = this.proxySecret;
+      headers["x-proxy-type"] = "newebpay";
+      headers["x-proxy-env"] = this.env;
     }
 
     return await axios({

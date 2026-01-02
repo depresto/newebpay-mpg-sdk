@@ -272,27 +272,31 @@ if (clientCheckCode === CheckCode) {
 }
 ```
 
-### Request Credit Card Agreement Token: Front Stage
+### Request Credit Card Agreement Token: Front Stage (首次約定付款 P₁ - 幕前情境 [NPA-F011])
 
 信用卡幕前首次約定付款
 
-詳情請見官方文件：(約定信用卡付款授權技術串接手冊)
-
 ```javascript
 // 回傳付款跳轉 HTML 表單
-const tokenAgreementFormHTML = await client.getPaymentFormHTML({
+// 當包含約定付款參數時，版本會自動設為 2.4
+const tokenAgreementFormHTML = client.getPaymentFormHTML({
   NotifyURL: "https://...", // 支付通知網址 必填
   ReturnURL: "https://...", // 支付完成返回商店網址 必填
-  MerchantOrderNo: "1234", // 商店訂單編號 必填 限英、數字、”_ ”格式 / 長度限制為30字
+  MerchantOrderNo: "2025011611000000", // 商店訂單編號 必填 限英、數字、”_ ”格式 / 長度限制為30字
   Amt: 100, // 訂單金額 必填 純數字不含符號 / 新台幣
   ItemDesc: "約定信用卡", // 商品資訊 必填 以逗號 (,) 分格, 最多50字元
   OrderComment: "約定信用卡", // 商店備註 非必填 最多300字元
-  Email: "test@example.comm", // 付款人電子信箱 必填
-  TokenTerm: "User ID", // Token名稱 必填 可對應付款人之資料，用於綁定付款人與信用卡卡號時使用，例:會員編號、Email
-  TokenLife: "2401", // Token有效日期 非必填 格式為YYMM，如2024/01為2401
+  Email: "test@example.com", // 付款人電子信箱 必填
+  CREDIT: 1, // 信用卡一次付清啟用 必填 1
   CREDITAGREEMENT: 1, // 約定信用卡付款 必填 1
-  ANDROIDPAYAGREEMENT: 0, // 約定Google Pay付款 非必填 0 | 1
-  SAMSUNGPAYAGREEMENT: 0, // 約定Samsung Pay付款 非必填 0 | 1
+  TokenTerm: "User ID", // Token名稱 必填 可對應付款人之資料，用於綁定付款人與信用卡卡號時使用，例:會員編號、Email
+  TokenLife: "2026-01-16", // Token有效日期 非必填 格式為YYYYMMDD
+  UseFor: "訂閱服務", // 約定付款用途 非必填
+  MobileVerify: 1, // 手機驗證開關 非必填 0=關閉, 1=開啟
+  MobileNumber: "0912345678", // 手機號碼 非必填
+  MobileNumberModify: 0, // 手機號碼是否允許修改 非必填 0=不可修改, 1=可修改
+  CardHolderName: "王小明", // 持卡人姓名 非必填
+  CardHolderPhone: "0912345678", // 持卡人電話 非必填
 });
 ```
 
@@ -335,16 +339,14 @@ const {
 });
 ```
 
-### Request Credit Card Payment by Token: Backstage
+### Authorize Credit Card Token Payment (後續約定付款 Pₙ - 幕後情境 [NPA-B102])
 
 信用卡幕後後續約定付款
 
-詳情請見官方文件：(信用卡幕後授權技術串接手冊 標準版)
-
 ```javascript
 const {
-  Status,
-  Message,
+  Status, // 回傳狀態 若成功則回傳 SUCCESS
+  Message, // 回應訊息
   Result: {
     MerchantID, // 藍新金流商店代號
     Amt, // 本次交易授權金額
@@ -352,27 +354,64 @@ const {
     MerchantOrderNo, // 商店自訂的訂單編號
     RespondCode, // 金融機構回應碼
     AuthBank, // 收單金融機構
-    CheckCode, // 檢核碼
-    TokenValue, // 約定 Token
-    TokenLife, // Token 有效日期
+    IP, // 付款人 IP
+    PayTime, // 支付完成時間
+    Card6No, // 卡號前六碼
+    Card4No, // 卡號後四碼
+    TokenUseStatus, // Token 使用狀態：0=未使用, 1=已使用, 2=已停用, 9=已刪除
   },
-} = await client.requestCreditCardPayment({
-  P3D: 0, // 開啟3D交易 必填 1 | 0,
-  NotifyURL: "https://...", // 支付通知網址 非必填 3D交易為必填參數
-  ReturnURL: "https://...", // 支付完成返回商店網址 非必填 3D交易為必填參數
-  MerchantOrderNo: "1234", // 商店訂單編號 必填 限英、數字、”_ ”格式 / 長度限制為30字
-  Amt: 100, // 訂單金額 必填 純數字不含符號 / 新台幣
-  ProdDesc: "約定信用卡", // 商品描述 必填 長度限制50字
-  PayerEmail: "test@example.comm", // 付款人電子信箱 必填
-  Inst: 0, // 信用卡分期付款 非必填 0或無值時，即代表不開啟分期，分為3/6/12/18/24/30期
-  CardNo: "4000221111111111", // 信用卡卡號 必填
-  Exp: "234", // 信用卡到期日 必填
-  CVC: "123", // 信用卡檢查碼 必填
-  TokenSwitch: "on", // Token類別 必填 固定為on
-  TokenTerm: "User ID", // Token名稱 必填 可對應付款人之資料，用於綁定付款人與信用卡卡號時使用，例:會員編號、Email
-  TokenLife: "2401", // Token有效日期 非必填 格式為YYMM，如2024/01為2401
-  TokenValue: "", // 首次約定付款回傳之TokenValue 必填
+} = await client.authorizeTokenPayment({
+  MerchantOrderNo: "2025011613000000", // 商店訂單編號 必填
+  Amt: 1000, // 訂單金額 必填
+  TokenValue: "abc123def456", // 約定付款 Token 必填 由首次約定付款取得
+  ProdDesc: "商品描述", // 商品描述 必填
+  PayerEmail: "test@example.com", // 付款人 Email 必填
+  CardHolderName: "王小明", // 持卡人姓名 非必填
+  CardHolderPhone: "0912345678", // 持卡人電話 非必填
+  NotifyURL: "https://...", // 支付通知網址 非必填
+  ReturnURL: "https://...", // 支付完成返回商店網址 非必填
 });
+```
+
+### Query Token Status (查詢約定付款綁定狀態 [NPA-B103])
+
+⚠️ **注意：此 API 目前還不能使用，請勿使用**
+
+```javascript
+// ⚠️ 目前不支援，請勿使用
+// const {
+//   Status,
+//   Message,
+//   Result: {
+//     MerchantID,
+//     MerchantOrderNo,
+//     TokenValue,
+//     TokenLife,
+//     TokenStatus, // Token 狀態：0=未使用, 1=已使用, 2=已停用, 9=已刪除
+//   },
+// } = await client.queryTokenStatus({
+//    TokenTerm: "2026-01-16",
+//    TokenValue: "abc123def456"
+// });
+```
+
+### Unbind Token (解除約定付款綁定 [NPA-B104])
+
+⚠️ **注意：此 API 目前還不能使用，請勿使用**
+
+```javascript
+// ⚠️ 目前不支援，請勿使用
+// const {
+//   Status,
+//   Message,
+//   Result: {
+//     MerchantID,
+//     MerchantOrderNo,
+//   },
+// } = await client.unbindToken({
+//    TokenTerm: "2026-01-16",
+//    TokenValue: "abc123def456"
+// });
 ```
 
 ### Charge a Partner store
