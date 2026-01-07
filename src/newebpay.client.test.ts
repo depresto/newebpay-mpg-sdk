@@ -88,6 +88,7 @@ describe("MPG API", () => {
       Amt: 100,
       ItemDesc: "約定付款綁卡測試（自動版本）",
       Email: "wayne@havppen.com",
+      TokenTerm: "2025011615000000",
       CREDIT: 1,
       CREDITAGREEMENT: 1,
     });
@@ -166,7 +167,7 @@ describe("periodic payment API", () => {
     });
     const data = client.createPeriodicPaymentHTML({
       LangType: "zh-Tw",
-      MerOrderNo: "2025011612000000",
+      MerOrderNo: "2026010812000000",
       ProdDesc: "約定信用卡",
       PeriodAmt: 10,
       PeriodType: "M",
@@ -293,7 +294,7 @@ describe("token payment API", () => {
   test("should authorizeTokenPayment request success", async () => {
     try {
       const response = await client.authorizeTokenPayment({
-        MerchantOrderNo: "2025011613000000",
+        MerchantOrderNo: "2025011618000000",
         Amt: 10,
         TokenValue: testCardToken,
         ProdDesc: "測試商品",
@@ -346,6 +347,212 @@ describe("token payment API", () => {
       }
     } catch (error) {
       console.log(error);
+    }
+  });
+});
+
+// 嵌入式信用卡支付頁測試
+// 注意：這些測試需要有效的 Prime（從前端 SDK 取得）或 TokenValue
+const testPrime = process.env.TEST_PRIME || "";
+const testEmbeddedTokenValue = process.env.TEST_EMBEDDED_TOKEN_VALUE || "";
+const testEmbeddedTokenTerm = process.env.TEST_EMBEDDED_TOKEN_TERM || "";
+
+describe("embedded credit card payment API (嵌入式信用卡支付頁)", () => {
+  let client: NewebpayClient;
+
+  beforeEach(() => {
+    client = new NewebpayClient({
+      merchantId,
+      hashKey,
+      hashIV,
+      env: "sandbox",
+      options: {
+        proxyEndpoint,
+        proxySecret,
+        userAgent,
+      },
+    });
+  });
+
+  test("should have correct inframeEndpoint for sandbox", () => {
+    expect(client.inframeEndpoint).toBe("https://c-inframe.newebpay.com");
+  });
+
+  test("should have correct inframeEndpoint for production", () => {
+    const prodClient = new NewebpayClient({
+      merchantId,
+      hashKey,
+      hashIV,
+      env: "production",
+    });
+    expect(prodClient.inframeEndpoint).toBe("https://p-inframe.newebpay.com");
+  });
+
+  test("should embeddedCreditCardPayment (P1) request with valid Prime", async () => {
+    // 跳過測試如果沒有設定 TEST_PRIME
+    if (!testPrime) {
+      console.log("Skipping test: TEST_PRIME not set");
+      return;
+    }
+
+    try {
+      const response = await client.embeddedCreditCardPayment({
+        Prime: testPrime,
+        MerchantOrderNo: `Order_${Date.now()}`,
+        Amt: 100,
+        ProdDesc: "嵌入式信用卡測試商品",
+        PayerEmail: "test@example.com",
+        CardHolderName: "Test User",
+      });
+
+      console.log("P1 Response:", response);
+      expect(response.Status).toBeDefined();
+      expect(response.Message).toBeDefined();
+
+      if (response.Status === "SUCCESS" && typeof response.Result === "object") {
+        expect(response.Result.MerchantID).toBe(merchantId);
+        expect(response.Result.TradeNo).toBeDefined();
+        expect(response.Result.MerchantOrderNo).toBeDefined();
+      }
+    } catch (error) {
+      console.log("P1 Error:", error);
+    }
+  });
+
+  test("should embeddedCreditCardPayment (P1) with TokenSwitch for binding", async () => {
+    // 跳過測試如果沒有設定 TEST_PRIME
+    if (!testPrime) {
+      console.log("Skipping test: TEST_PRIME not set");
+      return;
+    }
+
+    try {
+      const response = await client.embeddedCreditCardPayment({
+        Prime: testPrime,
+        MerchantOrderNo: `Order_${Date.now()}`,
+        Amt: 100,
+        ProdDesc: "嵌入式信用卡綁卡測試",
+        PayerEmail: "test@example.com",
+        CardHolderName: "Test User",
+        TokenSwitch: "get",
+        TokenTerm: "test@example.com",
+      });
+
+      console.log("P1 Binding Response:", response);
+      expect(response.Status).toBeDefined();
+      expect(response.Message).toBeDefined();
+
+      if (response.Status === "SUCCESS" && typeof response.Result === "object") {
+        expect(response.Result.MerchantID).toBe(merchantId);
+        // 綁卡成功應該回傳 TokenValue
+        if (response.Result.TokenValue) {
+          console.log("TokenValue for Pn:", response.Result.TokenValue);
+          console.log("TokenLife:", response.Result.TokenLife);
+        }
+      }
+    } catch (error) {
+      console.log("P1 Binding Error:", error);
+    }
+  });
+
+  test("should embeddedTokenPayment (Pn) request with valid TokenValue", async () => {
+    // 跳過測試如果沒有設定相關環境變數
+    if (!testEmbeddedTokenValue || !testEmbeddedTokenTerm) {
+      console.log(
+        "Skipping test: TEST_EMBEDDED_TOKEN_VALUE or TEST_EMBEDDED_TOKEN_TERM not set"
+      );
+      return;
+    }
+
+    try {
+      const response = await client.embeddedTokenPayment({
+        TokenValue: testEmbeddedTokenValue,
+        TokenTerm: testEmbeddedTokenTerm,
+        MerchantOrderNo: `Order_${Date.now()}`,
+        Amt: 100,
+        ProdDesc: "嵌入式後續約定付款測試",
+      });
+
+      console.log("Pn Response:", response);
+      expect(response.Status).toBeDefined();
+      expect(response.Message).toBeDefined();
+
+      if (response.Status === "SUCCESS" && typeof response.Result === "object") {
+        expect(response.Result.MerchantID).toBe(merchantId);
+        expect(response.Result.TradeNo).toBeDefined();
+        expect(response.Result.MerchantOrderNo).toBeDefined();
+        expect(response.Result.TokenLife).toBeDefined();
+      }
+    } catch (error) {
+      console.log("Pn Error:", error);
+    }
+  });
+
+  test("should embeddedTokenPayment (Pn) with installment", async () => {
+    // 跳過測試如果沒有設定相關環境變數
+    if (!testEmbeddedTokenValue || !testEmbeddedTokenTerm) {
+      console.log(
+        "Skipping test: TEST_EMBEDDED_TOKEN_VALUE or TEST_EMBEDDED_TOKEN_TERM not set"
+      );
+      return;
+    }
+
+    try {
+      const response = await client.embeddedTokenPayment({
+        TokenValue: testEmbeddedTokenValue,
+        TokenTerm: testEmbeddedTokenTerm,
+        MerchantOrderNo: `Order_${Date.now()}`,
+        Amt: 1000,
+        ProdDesc: "嵌入式後續約定付款分期測試",
+        Inst: "3", // 分 3 期
+      });
+
+      console.log("Pn Installment Response:", response);
+      expect(response.Status).toBeDefined();
+      expect(response.Message).toBeDefined();
+    } catch (error) {
+      console.log("Pn Installment Error:", error);
+    }
+  });
+
+  test("should handle embeddedCreditCardPayment error with invalid Prime", async () => {
+    try {
+      const response = await client.embeddedCreditCardPayment({
+        Prime: "invalid_prime_value",
+        MerchantOrderNo: `Order_${Date.now()}`,
+        Amt: 100,
+        ProdDesc: "測試無效 Prime",
+        PayerEmail: "test@example.com",
+        CardHolderName: "Test User",
+      });
+
+      console.log("Invalid Prime Response:", response);
+      // 預期會回傳錯誤狀態
+      expect(response.Status).not.toBe("SUCCESS");
+    } catch (error) {
+      // API 可能會拋出錯誤
+      console.log("Expected error with invalid Prime:", error);
+      expect(error).toBeDefined();
+    }
+  });
+
+  test("should handle embeddedTokenPayment error with invalid TokenValue", async () => {
+    try {
+      const response = await client.embeddedTokenPayment({
+        TokenValue: "invalid_token_value",
+        TokenTerm: "invalid_token_term",
+        MerchantOrderNo: `Order_${Date.now()}`,
+        Amt: 100,
+        ProdDesc: "測試無效 TokenValue",
+      });
+
+      console.log("Invalid TokenValue Response:", response);
+      // 預期會回傳錯誤狀態
+      expect(response.Status).not.toBe("SUCCESS");
+    } catch (error) {
+      // API 可能會拋出錯誤
+      console.log("Expected error with invalid TokenValue:", error);
+      expect(error).toBeDefined();
     }
   });
 });

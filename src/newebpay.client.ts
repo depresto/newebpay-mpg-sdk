@@ -1,5 +1,5 @@
+import axios, { AxiosInstance, AxiosRequestHeaders } from "axios";
 import crypto from "crypto";
-import axios, { AxiosRequestHeaders } from "axios";
 import FormData from "form-data";
 import {
   AddMerchantParams,
@@ -12,12 +12,15 @@ import {
   CreatePeriodicPaymentHTMLParams,
   CreatePeriodicPaymentResponse,
   CreditCardPaymentParams,
+  EmbeddedPaymentParams,
+  EmbeddedPaymentResponse,
+  EmbeddedTokenPaymentParams,
   GetPaymentFormHTMLParams,
   ModifyMerchantParams,
   PeriodicPaymentResponse,
-  QueryTradeInfoParams,
   QueryTokenStatusParams,
   QueryTokenStatusResponse,
+  QueryTradeInfoParams,
   RefundCreditCardParams,
   RefundEWalletParams,
   TokenPaymentParams,
@@ -39,9 +42,14 @@ export class NewebpayClient {
   hashKey: string;
   hashIV: string;
   apiEndpoint: string;
+  inframeEndpoint: string;
   env: "sandbox" | "production";
+  proxyEndpoint?: string;
   proxySecret?: string;
   userAgent?: string;
+
+  apiInstance: AxiosInstance;
+  inframeInstance: AxiosInstance;
 
   constructor(params: {
     partnerId?: string;
@@ -60,12 +68,30 @@ export class NewebpayClient {
     this.hashIV = params.hashIV;
 
     this.userAgent = params.options?.userAgent;
+    this.proxyEndpoint = params.options?.proxyEndpoint;
     this.proxySecret = params.options?.proxySecret;
-    this.apiEndpoint = params.options?.proxyEndpoint
-      ? params.options.proxyEndpoint
-      : isDryRun
+    this.apiEndpoint = isDryRun
       ? "https://ccore.newebpay.com"
       : "https://core.newebpay.com";
+    this.inframeEndpoint = isDryRun
+      ? "https://c-inframe.newebpay.com"
+      : "https://p-inframe.newebpay.com";
+
+    this.apiInstance = this.createApiInstance({
+      apiEndpoint: this.apiEndpoint,
+      proxyEndpoint: this.proxyEndpoint,
+      proxySecret: this.proxySecret,
+      userAgent: this.userAgent,
+      defaultHeaders: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    this.inframeInstance = this.createApiInstance({
+      apiEndpoint: this.inframeEndpoint,
+      proxyEndpoint: this.proxyEndpoint,
+      proxySecret: this.proxySecret,
+      userAgent: this.userAgent,
+    });
   }
 
   /**
@@ -150,10 +176,10 @@ export class NewebpayClient {
     formData.append("MerchantOrderNo", MerchantOrderNo);
     formData.append("Amt", Amt);
 
-    const { data } = await this.sendApiRequest({
-      apiPath: "/API/QueryTradeInfo",
-      data: formData,
-    });
+    const { data } = await this.apiInstance.post(
+      "/API/QueryTradeInfo",
+      formData
+    );
     const Status = data.Status as string;
     const Message = data.Message as string;
     const Result = data.Result as { [key: string]: any };
@@ -225,10 +251,10 @@ export class NewebpayClient {
     formData.append("MerchantID_", this.merchantId);
     formData.append("PostData_", PostData_);
 
-    const { data } = await this.sendApiRequest({
-      apiPath: "/MPG/period/AlterStatus",
-      data: formData,
-    });
+    const { data } = await this.apiInstance.post(
+      "/MPG/period/AlterStatus",
+      formData
+    );
 
     if (typeof data === "string") {
       const response = new URLSearchParams(data);
@@ -261,10 +287,10 @@ export class NewebpayClient {
     formData.append("MerchantID_", this.merchantId);
     formData.append("PostData_", PostData_);
 
-    const { data } = await this.sendApiRequest({
-      apiPath: "/MPG/period/AlterAmt",
-      data: formData,
-    });
+    const { data } = await this.apiInstance.post(
+      "/MPG/period/AlterAmt",
+      formData
+    );
 
     if (typeof data === "string") {
       const response = new URLSearchParams(data);
@@ -295,10 +321,10 @@ export class NewebpayClient {
     formData.append("MerchantID_", this.merchantId);
     formData.append("PostData_", PostData_);
 
-    const { data } = await this.sendApiRequest({
-      apiPath: "/API/CreditCard/Close",
-      data: formData,
-    });
+    const { data } = await this.apiInstance.post(
+      "/API/CreditCard/Close",
+      formData
+    );
     const Status = data.Status as string;
     const Message = data.Message as string;
     const Result = data.Result as { [key: string]: any };
@@ -325,10 +351,10 @@ export class NewebpayClient {
     formData.append("MerchantID_", this.merchantId);
     formData.append("PostData_", PostData_);
 
-    const { data } = await this.sendApiRequest({
-      apiPath: "/API/CreditCard/Cancel",
-      data: formData,
-    });
+    const { data } = await this.apiInstance.post(
+      "/API/CreditCard/Cancel",
+      formData
+    );
     const Status = data.Status as string;
     const Message = data.Message as string;
     const Result = data.Result as { [key: string]: any };
@@ -358,10 +384,10 @@ export class NewebpayClient {
     formData.append("RespondType_", "JSON");
     formData.append("HashData_", HashData_);
 
-    const { data } = await this.sendApiRequest({
-      apiPath: "/API/EWallet/refund",
-      data: formData,
-    });
+    const { data } = await this.apiInstance.post(
+      "/API/EWallet/refund",
+      formData
+    );
     const Status = data.Status as string;
     const Message = data.Message as string;
     const UID = data.UID as string;
@@ -401,10 +427,7 @@ export class NewebpayClient {
       })
     );
 
-    const { data } = await this.sendApiRequest({
-      apiPath: "/API/AddMerchant",
-      data: formData,
-    });
+    const { data } = await this.apiInstance.post("/API/AddMerchant", formData);
     const status = data.status as string;
     const message = data.message as string;
     const result = data.result as { [key: string]: any };
@@ -438,10 +461,10 @@ export class NewebpayClient {
       })
     );
 
-    const { data } = await this.sendApiRequest({
-      apiPath: "/API/AddMerchant/modify",
-      data: formData,
-    });
+    const { data } = await this.apiInstance.post(
+      "/API/AddMerchant/modify",
+      formData
+    );
     const status = data.status as string;
     const message = data.message as string;
     const result = data.result as { [key: string]: any };
@@ -475,10 +498,10 @@ export class NewebpayClient {
       })
     );
 
-    const { data } = await this.sendApiRequest({
-      apiPath: "/API/ChargeInstruct",
-      data: formData,
-    });
+    const { data } = await this.apiInstance.post(
+      "/API/ChargeInstruct",
+      formData
+    );
 
     return data as ChargeMerchantResult;
   }
@@ -500,10 +523,10 @@ export class NewebpayClient {
     );
     formData.append("Pos_", "JSON");
 
-    const { data } = await this.sendApiRequest({
-      apiPath: "/API/CreditCard/Close",
-      data: formData,
-    });
+    const { data } = await this.apiInstance.post(
+      "/API/CreditCard/Close",
+      formData
+    );
 
     return data as TradeInfo;
   };
@@ -520,13 +543,10 @@ export class NewebpayClient {
       ...params,
     });
 
-    const { data } = await this.sendApiRequest({
-      apiPath: "/API/CreditCard",
-      data: {
-        MerchantID_: this.merchantId,
-        PostData_: PostData_,
-        Pos_: "JSON",
-      },
+    const { data } = await this.apiInstance.post("/API/CreditCard", {
+      MerchantID_: this.merchantId,
+      PostData_: PostData_,
+      Pos_: "JSON",
     });
 
     const Status = data.Status as string;
@@ -551,11 +571,11 @@ export class NewebpayClient {
 
   /**
    * 查詢約定付款綁定狀態
-   * 
+   *
    * @deprecated 此 API 目前還不能使用，請勿使用
    * @param params 查詢參數
    * @returns 查詢結果
-   * 
+   *
    * @example
    * ```typescript
    * // 目前不支援，請勿使用
@@ -577,15 +597,12 @@ export class NewebpayClient {
     });
     const HashData_ = this.buildTradeSha(EncryptData_);
 
-    const { data } = await this.sendApiRequest({
-      apiPath: "/API/TokenCard/query",
-      data: {
-        UID_: this.merchantId,
-        EncryptData_: EncryptData_,
-        HashData_: HashData_,
-        Version_: Version,
-        RespondType_: "JSON",
-      },
+    const { data } = await this.apiInstance.post("/API/TokenCard/query", {
+      UID_: this.merchantId,
+      EncryptData_: EncryptData_,
+      HashData_: HashData_,
+      Version_: Version,
+      RespondType_: "JSON",
     });
 
     const Status = data.Status as string;
@@ -610,11 +627,11 @@ export class NewebpayClient {
 
   /**
    * 解除約定付款綁定
-   * 
+   *
    * @deprecated 此 API 目前還不能使用，請勿使用
    * @param params 解除綁定參數
    * @returns 解除綁定結果
-   * 
+   *
    * @example
    * ```typescript
    * // 目前不支援，請勿使用
@@ -636,15 +653,12 @@ export class NewebpayClient {
     });
     const HashData_ = this.buildTradeSha(PostData_);
 
-    const { data } = await this.sendApiRequest({
-      apiPath: "/API/TokenCard/unbinding",
-      data: {
-        UID_: this.merchantId,
-        EncryptData_: PostData_,
-        HashData_: HashData_,
-        Version_: Version,
-        RespondType_: "JSON",
-      },
+    const { data } = await this.apiInstance.post("/API/TokenCard/unbinding", {
+      UID_: this.merchantId,
+      EncryptData_: PostData_,
+      HashData_: HashData_,
+      Version_: Version,
+      RespondType_: "JSON",
     });
 
     const Status = data.Status as string;
@@ -665,6 +679,117 @@ export class NewebpayClient {
       Message,
       Result: Result!,
     } as UnbindTokenResponse;
+  }
+
+  /**
+   * 嵌入式信用卡支付頁 P1 首次交易
+   *
+   * 使用前端 SDK 取得的 Prime 進行信用卡授權交易。
+   * 若啟用綁卡功能 (TokenSwitch="get")，成功後會回傳 TokenValue 供後續約定付款使用。
+   *
+   * @param params 交易參數，包含 Prime、訂單資訊等
+   * @returns 交易結果，包含授權資訊、TokenValue（若有綁卡）
+   *
+   * @example
+   * ```typescript
+   * // 一般交易
+   * const result = await client.embeddedCreditCardPayment({
+   *   Prime: "從前端 SDK 取得的 Prime",
+   *   MerchantOrderNo: "Order_123",
+   *   Amt: 100,
+   *   ProdDesc: "測試商品",
+   *   PayerEmail: "test@example.com",
+   *   CardHolderName: "Test User"
+   * });
+   *
+   * // 綁卡交易
+   * const result = await client.embeddedCreditCardPayment({
+   *   Prime: "從前端 SDK 取得的 Prime",
+   *   MerchantOrderNo: "Order_123",
+   *   Amt: 100,
+   *   ProdDesc: "測試商品",
+   *   PayerEmail: "test@example.com",
+   *   CardHolderName: "Test User",
+   *   TokenSwitch: "get",
+   *   TokenTerm: "user@example.com"
+   * });
+   * // 成功後 result.Result.TokenValue 可用於後續約定付款
+   * ```
+   */
+  public async embeddedCreditCardPayment(
+    params: EmbeddedPaymentParams
+  ): Promise<EmbeddedPaymentResponse> {
+    const { Prime, ...restParams } = params;
+    const TimeStamp = Date.now();
+    const Version = "2.4";
+
+    const requestBody = {
+      MerchantID: this.merchantId,
+      TimeStamp,
+      Version,
+      ...restParams,
+    };
+
+    const { data } = await this.inframeInstance.post(
+      "/NWPJCore/PaymentC",
+      requestBody,
+      {
+        headers: {
+          Authorization: `Bearer ${Prime}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return data as EmbeddedPaymentResponse;
+  }
+
+  /**
+   * 嵌入式信用卡支付頁 Pn 後續約定付款
+   *
+   * 使用 P1 交易取得的 TokenValue 進行後續約定扣款。
+   * 不需要消費者再次輸入卡號。
+   *
+   * @param params 交易參數，包含 TokenValue、TokenTerm、訂單資訊等
+   * @returns 交易結果
+   *
+   * @example
+   * ```typescript
+   * const result = await client.embeddedTokenPayment({
+   *   TokenValue: "從 P1 回應取得的 TokenValue",
+   *   TokenTerm: "user@example.com", // 與 P1 相同
+   *   MerchantOrderNo: "Order_456",
+   *   Amt: 100,
+   *   ProdDesc: "續費商品"
+   * });
+   * ```
+   */
+  public async embeddedTokenPayment(
+    params: EmbeddedTokenPaymentParams
+  ): Promise<EmbeddedPaymentResponse> {
+    const TimeStamp = Date.now();
+    const Version = "2.0";
+
+    const requestBody = {
+      MerchantID: this.merchantId,
+      TimeStamp,
+      Version,
+      TokenSwitch: "on" as const,
+      ...params,
+    };
+
+    const { data } = await this.inframeInstance.post(
+      "/NWPJCore/PaymentTC",
+      requestBody,
+      {
+        headers: {
+          Authorization: `Bearer ${this.hashKey}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return data as EmbeddedPaymentResponse;
   }
 
   public buildTradeInfo(params: { [key: string]: any }) {
@@ -726,27 +851,6 @@ export class NewebpayClient {
       .toUpperCase();
   }
 
-  public sendApiRequest = async (params: { apiPath: string; data: any }) => {
-    const headers: AxiosRequestHeaders = {
-      "Content-Type": "multipart/form-data",
-    };
-    if (this.userAgent) {
-      headers["User-Agent"] = this.userAgent;
-    }
-    if (this.proxySecret) {
-      headers["x-proxy-secret"] = this.proxySecret;
-      headers["x-proxy-type"] = "newebpay";
-      headers["x-proxy-env"] = this.env;
-    }
-
-    return await axios({
-      method: "post",
-      url: `${this.apiEndpoint}${params.apiPath}`,
-      data: params.data,
-      headers,
-    });
-  };
-
   public parseCreatePeriodicPaymentResponse(rawResponse: string) {
     const decrypted = this.decryptAESString(rawResponse);
     return JSON.parse(decrypted) as CreatePeriodicPaymentResponse;
@@ -759,6 +863,40 @@ export class NewebpayClient {
 
   private getTimeStamp() {
     return Math.floor(new Date().getTime() / 1000).toString();
+  }
+
+  private createApiInstance({
+    apiEndpoint,
+    proxyEndpoint,
+    proxySecret,
+    userAgent,
+    defaultHeaders,
+  }: {
+    apiEndpoint: string;
+    proxyEndpoint?: string;
+    proxySecret?: string;
+    userAgent?: string;
+    defaultHeaders?: AxiosRequestHeaders;
+  }): AxiosInstance {
+    const apiRequestHeaders: AxiosRequestHeaders = defaultHeaders ?? {};
+    if (userAgent) {
+      apiRequestHeaders["User-Agent"] = userAgent;
+    }
+    if (proxyEndpoint && proxySecret) {
+      apiRequestHeaders["x-proxy-type"] = "custom";
+      apiRequestHeaders["x-proxy-secret"] = proxySecret;
+      apiRequestHeaders["x-proxy-target-endpoint"] = this.apiEndpoint;
+
+      return axios.create({
+        baseURL: proxyEndpoint,
+        headers: apiRequestHeaders,
+      });
+    } else {
+      return axios.create({
+        baseURL: apiEndpoint,
+        headers: apiRequestHeaders,
+      });
+    }
   }
 }
 

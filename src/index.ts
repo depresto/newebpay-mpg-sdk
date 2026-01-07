@@ -25,6 +25,9 @@ import { QueryTokenStatusParams } from "./interfaces/creditCard/QueryTokenStatus
 import { QueryTokenStatusResponse } from "./interfaces/creditCard/QueryTokenStatusResponse";
 import { UnbindTokenParams } from "./interfaces/creditCard/UnbindTokenParams";
 import { UnbindTokenResponse } from "./interfaces/creditCard/UnbindTokenResponse";
+import { EmbeddedPaymentParams } from "./interfaces/embedded/EmbeddedPaymentParams";
+import { EmbeddedPaymentResponse, EmbeddedPaymentResult } from "./interfaces/embedded/EmbeddedPaymentResponse";
+import { EmbeddedTokenPaymentParams } from "./interfaces/embedded/EmbeddedTokenPaymentParams";
 
 export {
   NewebpayClient,
@@ -55,6 +58,11 @@ export {
   QueryTokenStatusResponse,
   UnbindTokenParams,
   UnbindTokenResponse,
+  // 嵌入式信用卡支付頁
+  EmbeddedPaymentParams,
+  EmbeddedPaymentResponse,
+  EmbeddedPaymentResult,
+  EmbeddedTokenPaymentParams,
 };
 
 export default NewebpayClient;
