@@ -26,7 +26,14 @@ import { QueryTokenStatusResponse } from "./interfaces/creditCard/QueryTokenStat
 import { UnbindTokenParams } from "./interfaces/creditCard/UnbindTokenParams";
 import { UnbindTokenResponse } from "./interfaces/creditCard/UnbindTokenResponse";
 import { EmbeddedPaymentParams } from "./interfaces/embedded/EmbeddedPaymentParams";
-import { EmbeddedPaymentResponse, EmbeddedPaymentResult } from "./interfaces/embedded/EmbeddedPaymentResponse";
+import {
+  EmbeddedPaymentResponse,
+  EmbeddedPaymentResult,
+  Embedded3DResponse,
+  EmbeddedSuccessResponse,
+  is3DResponse,
+  isSuccessResponse,
+} from "./interfaces/embedded/EmbeddedPaymentResponse";
 import { EmbeddedTokenPaymentParams } from "./interfaces/embedded/EmbeddedTokenPaymentParams";
 
 export {
@@ -63,6 +70,11 @@ export {
   EmbeddedPaymentResponse,
   EmbeddedPaymentResult,
   EmbeddedTokenPaymentParams,
+  // 3D 驗證相關
+  Embedded3DResponse,
+  EmbeddedSuccessResponse,
+  is3DResponse,
+  isSuccessResponse,
 };
 
 export default NewebpayClient;

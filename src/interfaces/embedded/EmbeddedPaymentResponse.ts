@@ -135,6 +135,27 @@ export type EmbeddedPaymentResult = {
 };
 
 /**
+ * 3D 驗證回應
+ * 當 P3D=1 時，API 回傳 3D 驗證 HTML
+ */
+export type Embedded3DResponse = {
+  Status: "SUCCESS";
+  /** 通常為 "成功取得 3D HTML" 或類似訊息 */
+  Message: string;
+  /** URL encoded HTML 字串，需使用 decodeURIComponent 解碼後執行 */
+  Result: string;
+};
+
+/**
+ * 一般交易成功回應
+ */
+export type EmbeddedSuccessResponse = {
+  Status: "SUCCESS";
+  Message: string;
+  Result: EmbeddedPaymentResult;
+};
+
+/**
  * 嵌入式信用卡支付頁回應
  *
  * @example
@@ -154,7 +175,7 @@ export type EmbeddedPaymentResult = {
  * // 3D 交易回應（Result 為 HTML 字串）
  * const response3D: EmbeddedPaymentResponse = {
  *   Status: "SUCCESS",
- *   Message: "成功取得3D HTML",
+ *   Message: "成功取得 3D HTML",
  *   Result: "%3Cform+name%3D%27spgateway%27..." // URL encoded HTML
  * };
  * ```
@@ -177,4 +198,39 @@ export type EmbeddedPaymentResponse = {
    */
   Result: EmbeddedPaymentResult | string;
 };
+
+/**
+ * 判斷回應是否為 3D 驗證回應
+ *
+ * @example
+ * ```typescript
+ * const response = await client.embeddedCreditCardPayment({ P3D: "1", ... });
+ * if (is3DResponse(response)) {
+ *   const html = decodeURIComponent(response.Result);
+ *   // 將 HTML 注入頁面執行 3D 驗證
+ * }
+ * ```
+ */
+export function is3DResponse(
+  response: EmbeddedPaymentResponse
+): response is Embedded3DResponse {
+  return (
+    response.Status === "SUCCESS" &&
+    typeof response.Result === "string" &&
+    response.Result.includes("%3C") // URL encoded '<'
+  );
+}
+
+/**
+ * 判斷回應是否為一般成功回應（非 3D）
+ */
+export function isSuccessResponse(
+  response: EmbeddedPaymentResponse
+): response is EmbeddedSuccessResponse {
+  return (
+    response.Status === "SUCCESS" &&
+    typeof response.Result === "object" &&
+    response.Result !== null
+  );
+}
 

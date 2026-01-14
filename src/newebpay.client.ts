@@ -16,6 +16,7 @@ import {
   EmbeddedPaymentResponse,
   EmbeddedTokenPaymentParams,
   GetPaymentFormHTMLParams,
+  is3DResponse,
   ModifyMerchantParams,
   PeriodicPaymentResponse,
   QueryTokenStatusParams,
@@ -686,9 +687,10 @@ export class NewebpayClient {
    *
    * 使用前端 SDK 取得的 Prime 進行信用卡授權交易。
    * 若啟用綁卡功能 (TokenSwitch="get")，成功後會回傳 TokenValue 供後續約定付款使用。
+   * 若啟用 3D 驗證 (P3D="1")，回傳會是 URL encoded HTML 字串。
    *
    * @param params 交易參數，包含 Prime、訂單資訊等
-   * @returns 交易結果，包含授權資訊、TokenValue（若有綁卡）
+   * @returns 交易結果，包含授權資訊、TokenValue（若有綁卡）或 3D HTML
    *
    * @example
    * ```typescript
@@ -701,6 +703,23 @@ export class NewebpayClient {
    *   PayerEmail: "test@example.com",
    *   CardHolderName: "Test User"
    * });
+   *
+   * // 3D 驗證交易
+   * const result = await client.embeddedCreditCardPayment({
+   *   Prime: "從前端 SDK 取得的 Prime",
+   *   MerchantOrderNo: "Order_123",
+   *   Amt: 100,
+   *   ProdDesc: "測試商品",
+   *   PayerEmail: "test@example.com",
+   *   CardHolderName: "Test User",
+   *   P3D: "1",
+   *   NotifyURL: "https://example.com/notify",
+   *   ReturnURL: "https://example.com/return"
+   * });
+   * if (is3DResponse(result)) {
+   *   const html = client.decode3DHTML(result.Result);
+   *   // 將 HTML 注入頁面執行 3D 驗證
+   * }
    *
    * // 綁卡交易
    * const result = await client.embeddedCreditCardPayment({
@@ -742,6 +761,37 @@ export class NewebpayClient {
     );
 
     return data as EmbeddedPaymentResponse;
+  }
+
+  /**
+   * 解碼 3D 驗證 HTML
+   *
+   * 當 P3D=1 時，API 回傳 URL encoded HTML 字串，使用此方法解碼。
+   *
+   * @param encodedHtml URL encoded HTML 字串
+   * @returns 解碼後的 HTML 字串
+   *
+   * @example
+   * ```typescript
+   * const response = await client.embeddedCreditCardPayment({ P3D: "1", ... });
+   * if (is3DResponse(response)) {
+   *   const html = client.decode3DHTML(response.Result);
+   *   // 前端：document.write(html) 或注入到 iframe
+   * }
+   * ```
+   */
+  public decode3DHTML(encodedHtml: string): string {
+    return decodeURIComponent(encodedHtml.replace(/\+/g, " "));
+  }
+
+  /**
+   * 檢查回應是否為 3D 驗證回應
+   *
+   * @param response API 回應
+   * @returns 是否為 3D 驗證回應
+   */
+  public is3DResponse(response: EmbeddedPaymentResponse): boolean {
+    return is3DResponse(response);
   }
 
   /**

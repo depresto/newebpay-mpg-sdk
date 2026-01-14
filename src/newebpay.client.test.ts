@@ -1,4 +1,5 @@
 import NewebpayClient from "./newebpay.client";
+import { is3DResponse, isSuccessResponse } from ".";
 import fs from "fs";
 
 const merchantId = process.env.TEST_MERCHANT_ID || "";
@@ -554,5 +555,105 @@ describe("embedded credit card payment API (嵌入式信用卡支付頁)", () =>
       console.log("Expected error with invalid TokenValue:", error);
       expect(error).toBeDefined();
     }
+  });
+
+  test("should embeddedCreditCardPayment (P1) with P3D=1 for 3D verification", async () => {
+    // 跳過測試如果沒有設定 TEST_PRIME
+    if (!testPrime) {
+      console.log("Skipping test: TEST_PRIME not set");
+      return;
+    }
+
+    try {
+      const response = await client.embeddedCreditCardPayment({
+        Prime: testPrime,
+        MerchantOrderNo: `Order_${Date.now()}`,
+        Amt: 100,
+        ProdDesc: "3D 驗證測試商品",
+        PayerEmail: "test@example.com",
+        CardHolderName: "Test User",
+        P3D: "1",
+        NotifyURL: notifyUrl,
+        ReturnURL: returnUrl,
+      });
+
+      console.log("P1 3D Response:", response);
+      expect(response.Status).toBeDefined();
+      expect(response.Message).toBeDefined();
+
+      // 檢查是否為 3D 回應
+      if (is3DResponse(response)) {
+        console.log("3D HTML received");
+        const decodedHtml = client.decode3DHTML(response.Result);
+        console.log("Decoded 3D HTML (first 200 chars):", decodedHtml.substring(0, 200));
+        // 驗證解碼後的 HTML 包含 form 元素
+        expect(decodedHtml).toContain("<form");
+        expect(decodedHtml).toContain("</form>");
+      } else if (isSuccessResponse(response)) {
+        // 若不需要 3D 驗證，則直接成功
+        console.log("Non-3D success response:", response.Result);
+        expect(response.Result.TradeNo).toBeDefined();
+      }
+    } catch (error) {
+      console.log("P1 3D Error:", error);
+    }
+  });
+
+  test("should decode3DHTML correctly", () => {
+    // 測試 URL encoded HTML 解碼
+    const encodedHtml = "%3Cform+name%3D%27spgateway%27+action%3D%27https%3A%2F%2Fccore.newebpay.com%2FAPI%2FCreditCard%2FthreeDreturn%27+method%3D%27POST%27%3E%3Cinput+type%3D%27hidden%27+name%3D%27end_out%27+value%3D%27test%27%3E%3C%2Fform%3E";
+    const decodedHtml = client.decode3DHTML(encodedHtml);
+
+    console.log("Decoded HTML:", decodedHtml);
+
+    expect(decodedHtml).toContain("<form name='spgateway'");
+    expect(decodedHtml).toContain("action='https://ccore.newebpay.com/API/CreditCard/threeDreturn'");
+    expect(decodedHtml).toContain("method='POST'");
+    expect(decodedHtml).toContain("<input type='hidden' name='end_out' value='test'>");
+    expect(decodedHtml).toContain("</form>");
+  });
+
+  test("should is3DResponse type guard work correctly", () => {
+    // 測試 3D 回應
+    const response3D = {
+      Status: "SUCCESS" as const,
+      Message: "成功取得 3D HTML",
+      Result: "%3Cform+name%3D%27spgateway%27%3E%3C%2Fform%3E",
+    };
+    expect(is3DResponse(response3D)).toBe(true);
+    expect(client.is3DResponse(response3D)).toBe(true);
+
+    // 測試非 3D 回應
+    const responseNormal = {
+      Status: "SUCCESS" as const,
+      Message: "授權成功",
+      Result: {
+        MerchantID: "MS123456",
+        Amt: 100,
+        TradeNo: "24071714322191423",
+        MerchantOrderNo: "Order_123",
+        RespondCode: "00",
+        AuthBank: "Esun",
+        AuthDate: "20240717",
+        AuthTime: "143221",
+        Card6No: "123456",
+        Card4No: "7890",
+        Exp: "2512",
+        PaymentMethod: "CREDIT" as const,
+        IP: "192.168.1.1",
+        CheckCode: "ABC123",
+      },
+    };
+    expect(is3DResponse(responseNormal)).toBe(false);
+    expect(isSuccessResponse(responseNormal)).toBe(true);
+
+    // 測試錯誤回應
+    const responseError = {
+      Status: "LIB10002",
+      Message: "Prime 驗證失敗",
+      Result: "",
+    };
+    expect(is3DResponse(responseError)).toBe(false);
+    expect(isSuccessResponse(responseError)).toBe(false);
   });
 });
