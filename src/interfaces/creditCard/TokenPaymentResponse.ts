@@ -1,6 +1,6 @@
 /**
  * 後續約定付款回應結果
- * 
+ *
  * @example
  * ```typescript
  * const result: TokenPaymentResponseResult = {
@@ -29,43 +29,43 @@ export type TokenPaymentResponseResult = {
   TradeNo: string;
   /** 商店訂單編號 */
   MerchantOrderNo: string;
-  /** 支付方式 */
-  PaymentType: string;
-  /** 回應類型 */
-  RespondType: string;
-  /** 支付完成時間 */
-  PayTime: string;
+  /** 回應代碼 */
+  RespondCode: string;
+  /** 授權銀行 */
+  AuthBank: string;
+  /** 授權碼 */
+  Auth: string;
+  /** 授權日期 格式為 YYYYMMDD，例：20140304 */
+  AuthDate: string;
+  /** 授權時間 格式為 HHMMSS，例：123456 */
+  AuthTime: string;
+  /** 卡號前六碼 */
+  Card6No: string;
+  /** 卡號後四碼 */
+  Card4No: string;
+  /** 信用卡到期日，格式為 yymm */
+  Exp: string;
   /** 付款人 IP */
   IP: string;
-  /** 履約保證銀行 */
-  EscrowBank: string;
-  /** 授權銀行（選填） */
-  AuthBank?: string;
-  /** 回應代碼（選填） */
-  RespondCode?: string;
-  /** 授權碼（選填） */
-  Auth?: string;
-  /** 卡號前六碼（選填） */
-  Card6No?: string;
-  /** 卡號後四碼（選填） */
-  Card4No?: string;
   /** 分期期數（選填） */
   Inst?: number;
+  /** 首期金額（選填） */
+  InstFirst?: number;
   /** 每期金額（選填） */
   InstEach?: number;
   /** 3D 驗證結果（選填） */
   ECI?: string;
-  /** Token 使用狀態：0=未使用, 1=已使用, 2=已停用, 9=已刪除（選填） */
-  TokenUseStatus?: 0 | 1 | 2 | 9;
-  /** 紅利折抵金額（選填） */
-  RedAmt?: number;
   /** 支付方法（選填） */
   PaymentMethod?: string;
+  /** 履約保證銀行 */
+  EscrowBank: string;
+  /** 檢核碼 */
+  CheckCode: string;
 };
 
 /**
  * 後續約定付款回應
- * 
+ *
  * @example
  * ```typescript
  * const response: TokenPaymentResponse = {
@@ -94,4 +94,3 @@ export type TokenPaymentResponse = {
   /** 交易結果 */
   Result: TokenPaymentResponseResult;
 };
-
