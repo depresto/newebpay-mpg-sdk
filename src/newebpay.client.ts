@@ -935,7 +935,7 @@ export class NewebpayClient {
     if (proxyEndpoint && proxySecret) {
       apiRequestHeaders["x-proxy-type"] = "custom";
       apiRequestHeaders["x-proxy-secret"] = proxySecret;
-      apiRequestHeaders["x-proxy-target-endpoint"] = this.apiEndpoint;
+      apiRequestHeaders["x-proxy-target-endpoint"] = apiEndpoint;
 
       return axios.create({
         baseURL: proxyEndpoint,

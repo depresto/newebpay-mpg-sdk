@@ -456,7 +456,7 @@ describe("embedded credit card payment API (嵌入式信用卡支付頁)", () =>
     }
   });
 
-  test("should embeddedTokenPayment (Pn) request with valid TokenValue", async () => {
+  test("should embeddedTokenPayment request with valid TokenValue", async () => {
     // 跳過測試如果沒有設定相關環境變數
     if (!testEmbeddedTokenValue || !testEmbeddedTokenTerm) {
       console.log(
