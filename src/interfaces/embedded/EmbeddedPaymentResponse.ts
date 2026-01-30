@@ -179,6 +179,9 @@ export type EmbeddedSuccessResponse = {
  *   Result: "%3Cform+name%3D%27spgateway%27..." // URL encoded HTML
  * };
  * ```
+ * 
+ * // 需要 3D 驗證的回應
+ * const response3DRequired: EmbeddedPaymentResponse = "%3Cform+name%3D%27spgateway%27..." // URL encoded HTML
  */
 export type EmbeddedPaymentResponse = {
   /**
@@ -197,7 +200,7 @@ export type EmbeddedPaymentResponse = {
    * - 3D 交易（P3D=1）：URL encoded HTML 字串，需解碼後執行
    */
   Result: EmbeddedPaymentResult | string;
-};
+} | string;
 
 /**
  * 判斷回應是否為 3D 驗證回應
@@ -214,10 +217,13 @@ export type EmbeddedPaymentResponse = {
 export function is3DResponse(
   response: EmbeddedPaymentResponse
 ): response is Embedded3DResponse {
+  if (typeof response === "string") {
+    return true
+  }
+
   return (
     response.Status === "SUCCESS" &&
-    typeof response.Result === "string" &&
-    response.Result.includes("%3C") // URL encoded '<'
+    typeof response.Result === "string"
   );
 }
 
@@ -227,6 +233,10 @@ export function is3DResponse(
 export function isSuccessResponse(
   response: EmbeddedPaymentResponse
 ): response is EmbeddedSuccessResponse {
+  if (typeof response === "string") {
+    return false
+  }
+
   return (
     response.Status === "SUCCESS" &&
     typeof response.Result === "object" &&

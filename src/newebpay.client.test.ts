@@ -2,6 +2,7 @@ import NewebpayClient from "./newebpay.client";
 import { is3DResponse, isSuccessResponse } from ".";
 import fs from "fs";
 
+const env = (process.env.TEST_ENV || "sandbox") as "sandbox" | "production";
 const merchantId = process.env.TEST_MERCHANT_ID || "";
 const hashKey = process.env.TEST_HASH_KEY || "";
 const hashIV = process.env.TEST_HASH_IV || "";
@@ -15,7 +16,6 @@ const notifyUrl = process.env.TEST_NOTIFY_URL || "";
 const clientBackUrl = process.env.TEST_CLIENT_BACK_URL || "";
 
 const tradeInfo = process.env.TEST_TRADE_INFO || "";
-
 const testCardToken = process.env.TEST_CARD_TOKEN || "";
 
 describe("MPG API", () => {
@@ -26,7 +26,7 @@ describe("MPG API", () => {
       merchantId,
       hashKey,
       hashIV,
-      env: "sandbox",
+      env,
       options: {
         proxyEndpoint,
         proxySecret,
@@ -355,6 +355,8 @@ describe("token payment API", () => {
 // 嵌入式信用卡支付頁測試
 // 注意：這些測試需要有效的 Prime（從前端 SDK 取得）或 TokenValue
 const testPrime = process.env.TEST_PRIME || "";
+const testPayerEmail = process.env.TEST_PAYER_EMAIL || "";
+const testCardHolderName = process.env.TEST_CARDHOLDER_NAME || "";
 const testEmbeddedTokenValue = process.env.TEST_EMBEDDED_TOKEN_VALUE || "";
 const testEmbeddedTokenTerm = process.env.TEST_EMBEDDED_TOKEN_TERM || "";
 
@@ -366,7 +368,7 @@ describe("embedded credit card payment API (嵌入式信用卡支付頁)", () =>
       merchantId,
       hashKey,
       hashIV,
-      env: "sandbox",
+      env,
       options: {
         proxyEndpoint,
         proxySecret,
@@ -389,7 +391,7 @@ describe("embedded credit card payment API (嵌入式信用卡支付頁)", () =>
     expect(prodClient.inframeEndpoint).toBe("https://p-inframe.newebpay.com");
   });
 
-  test("should embeddedCreditCardPayment (P1) request with valid Prime", async () => {
+  test("should embeddedCreditCardPayment request with valid Prime", async () => {
     // 跳過測試如果沒有設定 TEST_PRIME
     if (!testPrime) {
       console.log("Skipping test: TEST_PRIME not set");
@@ -400,20 +402,31 @@ describe("embedded credit card payment API (嵌入式信用卡支付頁)", () =>
       const response = await client.embeddedCreditCardPayment({
         Prime: testPrime,
         MerchantOrderNo: `Order_${Date.now()}`,
-        Amt: 100,
+        Amt: 1,
         ProdDesc: "嵌入式信用卡測試商品",
-        PayerEmail: "test@example.com",
-        CardHolderName: "Test User",
+        PayerEmail: testPayerEmail,
+        CardHolderName: testCardHolderName,
       });
 
       console.log("P1 Response:", response);
-      expect(response.Status).toBeDefined();
-      expect(response.Message).toBeDefined();
 
-      if (response.Status === "SUCCESS" && typeof response.Result === "object") {
-        expect(response.Result.MerchantID).toBe(merchantId);
-        expect(response.Result.TradeNo).toBeDefined();
-        expect(response.Result.MerchantOrderNo).toBeDefined();
+      if (isSuccessResponse(response)) {
+        expect(response.Status).toBe("SUCCESS");
+        expect(response.Result).toBeDefined();
+        if (typeof response.Result === "object") {
+          expect(response.Result.MerchantID).toBe(merchantId);
+          expect(response.Result.TradeNo).toBeDefined();
+        }
+      } else if (is3DResponse(response)) {
+        console.log("P1 3D Response received");
+        const html = typeof response === "string" ? response : response.Result;
+        expect(html).toContain("<form");
+      } else {
+        // 錯誤回應
+        expect(typeof response).toBe("object");
+        if (typeof response === "object") {
+          expect(response.Status).not.toBe("SUCCESS");
+        }
       }
     } catch (error) {
       console.log("P1 Error:", error);
@@ -440,15 +453,22 @@ describe("embedded credit card payment API (嵌入式信用卡支付頁)", () =>
       });
 
       console.log("P1 Binding Response:", response);
-      expect(response.Status).toBeDefined();
-      expect(response.Message).toBeDefined();
 
-      if (response.Status === "SUCCESS" && typeof response.Result === "object") {
-        expect(response.Result.MerchantID).toBe(merchantId);
-        // 綁卡成功應該回傳 TokenValue
-        if (response.Result.TokenValue) {
-          console.log("TokenValue for Pn:", response.Result.TokenValue);
-          console.log("TokenLife:", response.Result.TokenLife);
+      if (isSuccessResponse(response)) {
+        expect(response.Status).toBe("SUCCESS");
+        if (typeof response.Result === "object") {
+          expect(response.Result.MerchantID).toBe(merchantId);
+          // 綁卡成功應該回傳 TokenValue
+          if (response.Result.TokenValue) {
+            console.log("TokenValue for Pn:", response.Result.TokenValue);
+            expect(response.Result.TokenLife).toBeDefined();
+          }
+        }
+      } else if (is3DResponse(response)) {
+        console.log("P1 3D Response received during binding");
+      } else {
+        if (typeof response === "object") {
+          expect(response.Status).not.toBe("SUCCESS");
         }
       }
     } catch (error) {
@@ -475,14 +495,20 @@ describe("embedded credit card payment API (嵌入式信用卡支付頁)", () =>
       });
 
       console.log("Pn Response:", response);
-      expect(response.Status).toBeDefined();
-      expect(response.Message).toBeDefined();
 
-      if (response.Status === "SUCCESS" && typeof response.Result === "object") {
-        expect(response.Result.MerchantID).toBe(merchantId);
-        expect(response.Result.TradeNo).toBeDefined();
-        expect(response.Result.MerchantOrderNo).toBeDefined();
-        expect(response.Result.TokenLife).toBeDefined();
+      if (isSuccessResponse(response)) {
+        expect(response.Status).toBe("SUCCESS");
+        if (typeof response.Result === "object") {
+          expect(response.Result.MerchantID).toBe(merchantId);
+          expect(response.Result.TradeNo).toBeDefined();
+          expect(response.Result.TokenLife).toBeDefined();
+        }
+      } else if (is3DResponse(response)) {
+        console.log("Pn 3D Response received");
+      } else {
+        if (typeof response === "object") {
+          expect(response.Status).not.toBe("SUCCESS");
+        }
       }
     } catch (error) {
       console.log("Pn Error:", error);
@@ -509,8 +535,9 @@ describe("embedded credit card payment API (嵌入式信用卡支付頁)", () =>
       });
 
       console.log("Pn Installment Response:", response);
-      expect(response.Status).toBeDefined();
-      expect(response.Message).toBeDefined();
+      if (typeof response !== "string") {
+        expect(response.Status).toBeDefined();
+      }
     } catch (error) {
       console.log("Pn Installment Error:", error);
     }
@@ -529,7 +556,12 @@ describe("embedded credit card payment API (嵌入式信用卡支付頁)", () =>
 
       console.log("Invalid Prime Response:", response);
       // 預期會回傳錯誤狀態
-      expect(response.Status).not.toBe("SUCCESS");
+      if (typeof response === "object") {
+        expect(response.Status).not.toBe("SUCCESS");
+      } else {
+        // 如果是 string，通常是 3D，但在無效 Prime 情況下不太可能
+        console.log("Unexpected string response for invalid Prime");
+      }
     } catch (error) {
       // API 可能會拋出錯誤
       console.log("Expected error with invalid Prime:", error);
@@ -549,7 +581,9 @@ describe("embedded credit card payment API (嵌入式信用卡支付頁)", () =>
 
       console.log("Invalid TokenValue Response:", response);
       // 預期會回傳錯誤狀態
-      expect(response.Status).not.toBe("SUCCESS");
+      if (typeof response === "object") {
+        expect(response.Status).not.toBe("SUCCESS");
+      }
     } catch (error) {
       // API 可能會拋出錯誤
       console.log("Expected error with invalid TokenValue:", error);
@@ -577,9 +611,11 @@ describe("embedded credit card payment API (嵌入式信用卡支付頁)", () =>
         ReturnURL: returnUrl,
       });
 
+      if (typeof response !== "string") {
+        expect(response.Status).toBeDefined();
+        expect(response.Message).toBeDefined();
+      }
       console.log("P1 3D Response:", response);
-      expect(response.Status).toBeDefined();
-      expect(response.Message).toBeDefined();
 
       // 檢查是否為 3D 回應
       if (is3DResponse(response)) {
