@@ -31,6 +31,15 @@ import {
   UnbindTokenResponse,
 } from ".";
 
+/**
+ * 移除值為 undefined 或 null 的鍵（空字串、0、false 皆保留）。
+ * 避免 URLSearchParams 把 undefined/null 序列化成 "Key=undefined" / "Key=null" 字串送給藍新。
+ */
+export const omitNullish = (params: { [key: string]: any }) =>
+  Object.fromEntries(
+    Object.entries(params).filter(([, v]) => v !== undefined && v !== null)
+  );
+
 type NewebpayClientOptions = {
   proxyEndpoint?: string;
   proxySecret?: string;
@@ -371,10 +380,12 @@ export class NewebpayClient {
     const Version = "1.0";
     const TimeStamp = this.getTimeStamp();
 
-    const data_ = JSON.stringify({
-      TimeStamp,
-      ...params,
-    });
+    const data_ = JSON.stringify(
+      omitNullish({
+        TimeStamp,
+        ...params,
+      })
+    );
     const EncryptData_ = this.encryptAESString(data_);
     const HashData_ = this.buildTradeSha(EncryptData_);
 
@@ -742,12 +753,12 @@ export class NewebpayClient {
     const TimeStamp = Date.now();
     const Version = "2.4";
 
-    const requestBody = {
+    const requestBody = omitNullish({
       MerchantID: this.merchantId,
       TimeStamp,
       Version,
       ...restParams,
-    };
+    });
 
     const { data } = await this.inframeInstance.post(
       "/NWPJCore/PaymentC",
@@ -820,13 +831,13 @@ export class NewebpayClient {
     const TimeStamp = Date.now();
     const Version = "2.0";
 
-    const requestBody = {
+    const requestBody = omitNullish({
       MerchantID: this.merchantId,
       TimeStamp,
       Version,
       TokenSwitch: "on" as const,
       ...params,
-    };
+    });
 
     const { data } = await this.inframeInstance.post(
       "/NWPJCore/PaymentTC",
@@ -843,7 +854,7 @@ export class NewebpayClient {
   }
 
   public buildTradeInfo(params: { [key: string]: any }) {
-    const postData = new URLSearchParams(params).toString();
+    const postData = new URLSearchParams(omitNullish(params)).toString();
     const encrypted = this.encryptAESString(postData);
     return encrypted;
   }
@@ -873,7 +884,7 @@ export class NewebpayClient {
         return obj;
       }, {} as { [key: string]: any });
 
-    const paramsStr = new URLSearchParams(data).toString();
+    const paramsStr = new URLSearchParams(omitNullish(data)).toString();
     const checkStr = `HashIV=${this.hashIV}&${paramsStr}&HashKey=${this.hashKey}`;
 
     return crypto
@@ -891,7 +902,7 @@ export class NewebpayClient {
         return obj;
       }, {} as { [key: string]: any });
 
-    const paramsStr = new URLSearchParams(data).toString();
+    const paramsStr = new URLSearchParams(omitNullish(data)).toString();
     const checkStr = `IV=${this.hashIV}&${paramsStr}&Key=${this.hashKey}`;
 
     return crypto
